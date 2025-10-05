@@ -1,0 +1,47 @@
+
+
+# dooapps releases repo: track only release artifacts and minimal metadata
+# Strategy: ignore everything by default, then whitelist what we explicitly want.
+
+# 1) Ignore everything
+*
+
+# 2) Allow directory traversal so whitelisted files inside subfolders are kept
+!*/
+
+# 3) Always keep the repo control files and docs
+!.gitignore
+!LICENSE
+!*.md
+!*.txt
+!CHANGELOG.md
+!SECURITY.md
+!KEYS.md
+!README.md
+
+# 4) CocoaPods: keep podspecs
+!*.podspec
+
+# 5) Release artifacts (archives/binaries)
+!*.zip
+!*.tar
+!*.tar.gz
+!*.tgz
+!*.aar
+
+# Optional: allow vendored XCFrameworks (if you choose zero-network installs)
+!*.xcframework
+!*.xcframework/**
+
+# 6) Checksums and signatures
+!*.sha256
+!*.sha512
+!SHA256SUMS
+!SHA512SUMS
+!*.sig
+!*.asc
+
+# 7) Optional manifests / metadata (keep if you publish release indices)
+!*.json
+!*.yml
+!*.yaml
