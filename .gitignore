@@ -44,4 +44,4 @@
 # 7) Optional manifests / metadata (keep if you publish release indices)
 !*.json
 !*.yml
-!*.yaml
+!*.yamldocs/
