@@ -33,16 +33,18 @@ class InfusionCryptoAdapter implements TTCryptoPort {
   Future<Uint8List> seal(Uint8List data, {int policyId = 0}) async {
     // Note: Legacy used default policy. New API might require it.
     // Assuming policyId 0 is safe default if not specified.
-    if (_infusion == null)
+    if (_infusion == null) {
       throw StateError("InfusionCryptoAdapter not initialized");
+    }
     return _infusion!.seal(data: data, policyId: policyId);
   }
 
   /// Decrypt and verify data (Open Frame).
   /// Maps to legacy `fbblDecryptId`.
   Future<Uint8List> open(Uint8List data) async {
-    if (_infusion == null)
+    if (_infusion == null) {
       throw StateError("InfusionCryptoAdapter not initialized");
+    }
     return _infusion!.open(data);
   }
 
