@@ -1,0 +1,1 @@
+enum MutableEnum { immutable, mutable }

@@ -1,0 +1,36 @@
+name: tisane
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  infusion_ffi: ^1.2.6
+  base64: ^1.0.0
+  uuid: ^4.5.1
+  mutex: ^3.0.0
+  web_socket_channel: ^3.0.3
+  webcrypto: ^0.5.3
+  convert: ^3.1.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  flutter_secure_storage: ^9.2.4
+  dio: ^5.4.0
+  crypto: ^3.0.6
+  xxh3: ^1.2.0
+  meta: ^1.16.0
+
+dev_dependencies:
+  test: ^1.24.0
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
