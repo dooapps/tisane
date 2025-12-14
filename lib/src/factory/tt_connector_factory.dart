@@ -15,7 +15,7 @@ abstract class TTConnectorFactory {
 
 class DefaultTTConnectorFactory implements TTConnectorFactory {
   DefaultTTConnectorFactory({TTTransportPort? transportPort})
-      : _transportPort = transportPort ?? createDefaultTransportPort();
+    : _transportPort = transportPort ?? createDefaultTransportPort();
 
   final TTTransportPort _transportPort;
 

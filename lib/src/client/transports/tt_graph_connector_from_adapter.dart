@@ -14,8 +14,8 @@ class TTGraphConnectorFromAdapter extends TTGraphWireConnector {
     required GraphStorePort store,
     GraphReplicationPort? replication,
     super.name = 'TTGraphConnectorFromAdapter',
-  })  : _store = store,
-        _replication = replication ?? _NoopReplication();
+  }) : _store = store,
+       _replication = replication ?? _NoopReplication();
 
   final GraphStorePort _store;
   // Currently not used directly in this connector, kept for parity with factory wiring
@@ -24,30 +24,36 @@ class TTGraphConnectorFromAdapter extends TTGraphWireConnector {
 
   @override
   VoidCallback get(TTGet request, [dynamic _, dynamic __]) {
-    _store.fetchNode(request.soul).then((node) {
-      TTGraphData ttGraphData = TTGraphData();
-      ttGraphData[request.soul] = node;
-      return TTMsg(
-          key: generateMessageId(),
-          pos: request.msgId ?? '',
-          put: !isNull(node) ? ttGraphData : null);
-    }).catchError((err) {
-      assert(() {
-        // ignore: avoid_print
-        print(err);
-        return true;
-      }());
+    _store
+        .fetchNode(request.soul)
+        .then((node) {
+          TTGraphData ttGraphData = TTGraphData();
+          ttGraphData[request.soul] = node;
+          return TTMsg(
+            key: generateMessageId(),
+            pos: request.msgId ?? '',
+            put: !isNull(node) ? ttGraphData : null,
+          );
+        })
+        .catchError((err) {
+          assert(() {
+            // ignore: avoid_print
+            print(err);
+            return true;
+          }());
 
-      return TTMsg(
-          key: generateMessageId(),
-          pos: request.msgId ?? '',
-          err: 'Error fetching node');
-    }).then((msg) {
-      ingest([msg]);
-      if (!isNull(request.cb)) {
-        request.cb!(msg);
-      }
-    });
+          return TTMsg(
+            key: generateMessageId(),
+            pos: request.msgId ?? '',
+            err: 'Error fetching node',
+          );
+        })
+        .then((msg) {
+          ingest([msg]);
+          if (!isNull(request.cb)) {
+            request.cb!(msg);
+          }
+        });
 
     return noop;
   }
@@ -56,29 +62,34 @@ class TTGraphConnectorFromAdapter extends TTGraphWireConnector {
   VoidCallback put(TTPut request, [dynamic _, dynamic __]) {
     _store
         .writeGraph(request.graph)
-        .then((node) => TTMsg(
+        .then(
+          (node) => TTMsg(
             key: generateMessageId(),
             pos: request.msgId ?? '',
             err: null,
-            ok: true))
+            ok: true,
+          ),
+        )
         .catchError((err) {
-      assert(() {
-        // ignore: avoid_print
-        print(err);
-        return true;
-      }());
+          assert(() {
+            // ignore: avoid_print
+            print(err);
+            return true;
+          }());
 
-      return TTMsg(
-          key: generateMessageId(),
-          pos: request.msgId ?? '',
-          err: 'Error saving put',
-          ok: false);
-    }).then((msg) {
-      ingest([msg]);
-      if (!isNull(request.cb)) {
-        request.cb!(msg);
-      }
-    });
+          return TTMsg(
+            key: generateMessageId(),
+            pos: request.msgId ?? '',
+            err: 'Error saving put',
+            ok: false,
+          );
+        })
+        .then((msg) {
+          ingest([msg]);
+          if (!isNull(request.cb)) {
+            request.cb!(msg);
+          }
+        });
 
     return noop;
   }
@@ -86,7 +97,8 @@ class TTGraphConnectorFromAdapter extends TTGraphWireConnector {
 
 class _NoopReplication implements GraphReplicationPort {
   @override
-  ChangeSetEntryFunc changesetFeed(String from) => () async => null;
+  ChangeSetEntryFunc changesetFeed(String from) =>
+      () async => null;
 
   @override
   VoidCallback onChange(SetChangeSetEntryFunc handler, {String? from}) => () {};

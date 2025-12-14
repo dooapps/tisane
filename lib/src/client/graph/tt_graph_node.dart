@@ -4,8 +4,8 @@ import '../interfaces.dart';
 import 'tt_graph.dart';
 import '../../types/graph_change.dart';
 
-typedef UpdateGraphFunc = void Function(TTGraphData data,
-    [String? id, String? replyToId]);
+typedef UpdateGraphFunc =
+    void Function(TTGraphData data, [String? id, String? replyToId]);
 
 class TTGraphNode {
   final String soul;
@@ -15,10 +15,11 @@ class TTGraphNode {
   VoidCallback? _endCurQuery;
   late final UpdateGraphFunc _updateGraph;
 
-  TTGraphNode(
-      {required this.soul,
-      required TTGraph graph,
-      required UpdateGraphFunc updateGraph}) {
+  TTGraphNode({
+    required this.soul,
+    required TTGraph graph,
+    required UpdateGraphFunc updateGraph,
+  }) {
     _graph = graph;
     _updateGraph = updateGraph;
     _data = TTEvent<TTNode?, dynamic, dynamic>(name: '<TTGraphNode $soul>');

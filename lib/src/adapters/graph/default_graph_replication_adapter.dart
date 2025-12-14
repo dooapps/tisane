@@ -13,8 +13,8 @@ class DefaultGraphReplicationAdapter implements GraphReplicationPort {
   DefaultGraphReplicationAdapter({
     required GraphStorePort store,
     required GraphMergePort merge,
-  })  : _store = store,
-        _merge = merge;
+  }) : _store = store,
+       _merge = merge;
 
   final GraphStorePort _store;
   // ignore: unused_field
@@ -49,10 +49,12 @@ class DefaultGraphReplicationAdapter implements GraphReplicationPort {
     await _store.writeGraph(diff);
     // Notify subscribers with a synthetic change event per soul
     for (final entry in diff.entries) {
-      _controller.add(Tuple<String, TTGraphData>(
-        item1: entry.key,
-        item2: (TTGraphData()..[entry.key] = entry.value),
-      ));
+      _controller.add(
+        Tuple<String, TTGraphData>(
+          item1: entry.key,
+          item2: (TTGraphData()..[entry.key] = entry.value),
+        ),
+      );
     }
   }
 }

@@ -20,8 +20,9 @@ TTGraphData getStoreData(TTGraphData graph, [num activeConnectors = 0]) {
   for (final soul in graph.keys) {
     TTNode? node;
     if (InitStorage.hiveOpenBox!.containsKey(soul)) {
-      TTNode tempNode =
-          TTNode.fromJson(jsonDecode(InitStorage.hiveOpenBox?.get(soul)));
+      TTNode tempNode = TTNode.fromJson(
+        jsonDecode(InitStorage.hiveOpenBox?.get(soul)),
+      );
       node = mergeTTNodes(tempNode, graph[soul]);
       node?.nodeMetaData = graph[soul]?.nodeMetaData;
     } else {
@@ -45,8 +46,9 @@ TTGraphData setStoreData(TTGraphData graph) {
   for (final soul in graph.keys) {
     TTNode? node;
     if (InitStorage.hiveOpenBox!.containsKey(soul)) {
-      TTNode tempNode =
-          TTNode.fromJson(jsonDecode(InitStorage.hiveOpenBox?.get(soul)));
+      TTNode tempNode = TTNode.fromJson(
+        jsonDecode(InitStorage.hiveOpenBox?.get(soul)),
+      );
       node = mergeTTNodes(tempNode, graph[soul]);
       node?.nodeMetaData = graph[soul]?.nodeMetaData;
     } else {

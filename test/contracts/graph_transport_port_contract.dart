@@ -10,23 +10,25 @@ void defineGraphTransportPortContract(
   GraphTransportPort Function() create,
 ) {
   group('GraphTransportPort contract: $name', () {
-    test('connectToGraph returns self and connection signals propagate',
-        () async {
-      final transport = create();
-      final graph = TTGraph();
+    test(
+      'connectToGraph returns self and connection signals propagate',
+      () async {
+        final transport = create();
+        final graph = TTGraph();
 
-      expect(() => transport.connectToGraph(graph), returnsNormally);
-      // Simulate underlying connection=True via port event and observe proxy
-      transport.events.connection.trigger(true);
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      expect(transport.isConnected, isTrue);
+        expect(() => transport.connectToGraph(graph), returnsNormally);
+        // Simulate underlying connection=True via port event and observe proxy
+        transport.events.connection.trigger(true);
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        expect(transport.isConnected, isTrue);
 
-      // and then False
-      transport.events.connection.trigger(false);
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      expect(transport.isConnected, isFalse);
+        // and then False
+        transport.events.connection.trigger(false);
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        expect(transport.isConnected, isFalse);
 
-      expect(() => transport.detach(), returnsNormally);
-    });
+        expect(() => transport.detach(), returnsNormally);
+      },
+    );
   });
 }

@@ -42,7 +42,8 @@ class _InfusionTestScreenState extends State<InfusionTestScreen> {
     try {
       _log('Testing Initialize...');
       // Waiting for documentation update on new API signature.
-      _log('Library loaded: \$lib');
+      // _log('Library loaded: $lib'); // lib is undefined
+      _log('Library loading skipped (placeholder)');
 
       // Placeholder for new API call:
       // await lib.initialize(...);

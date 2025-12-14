@@ -25,12 +25,7 @@ class JWK {
   });
 
   Map<String, dynamic> toJson() {
-    final data = <String, dynamic>{
-      'kty': kty,
-      'crv': crv,
-      'x': x,
-      'y': y,
-    };
+    final data = <String, dynamic>{'kty': kty, 'crv': crv, 'x': x, 'y': y};
 
     if (d != null && d!.isNotEmpty) {
       data['d'] = d;
@@ -52,14 +47,19 @@ class KeyToJwk {
   bool ext = false;
   String alg = "";
 
-  KeyToJwk.from(
-      {required this.k,
-      required this.kty,
-      required this.ext,
-      required this.alg});
+  KeyToJwk.from({
+    required this.k,
+    required this.kty,
+    required this.ext,
+    required this.alg,
+  });
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'k': k, 'kty': kty, 'ext': ext, 'alg': alg};
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'k': k,
+    'kty': kty,
+    'ext': ext,
+    'alg': alg,
+  };
 }
 
 class DefaultAESKey {
@@ -91,8 +91,13 @@ class DefaultWorkFn {
   num? length;
   crypto.Hash? hash;
 
-  DefaultWorkFn.from(
-      {this.name, this.encode, this.hash, this.iterations, this.length});
+  DefaultWorkFn.from({
+    this.name,
+    this.encode,
+    this.hash,
+    this.iterations,
+    this.length,
+  });
 }
 
 class AuthenticateReturnDataType {
@@ -102,28 +107,30 @@ class AuthenticateReturnDataType {
   String priv;
   String pub;
 
-  AuthenticateReturnDataType.from(
-      {required this.alias,
-      required this.epriv,
-      required this.epub,
-      required this.priv,
-      required this.pub});
+  AuthenticateReturnDataType.from({
+    required this.alias,
+    required this.epriv,
+    required this.epub,
+    required this.priv,
+    required this.pub,
+  });
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'alias': alias,
-        'epub': epub,
-        'pub': pub,
-        'epriv': epriv,
-        'priv': priv,
-      };
+    'alias': alias,
+    'epub': epub,
+    'pub': pub,
+    'epriv': epriv,
+    'priv': priv,
+  };
 
   factory AuthenticateReturnDataType.fromJson(Map<String, dynamic> parsedJson) {
     return AuthenticateReturnDataType.from(
-        alias: parsedJson['alias'],
-        epub: parsedJson['epub'],
-        pub: parsedJson['pub'],
-        epriv: parsedJson['epriv'],
-        priv: parsedJson['priv']);
+      alias: parsedJson['alias'],
+      epub: parsedJson['epub'],
+      pub: parsedJson['pub'],
+      epriv: parsedJson['epriv'],
+      priv: parsedJson['priv'],
+    );
   }
 }
 
@@ -140,8 +147,11 @@ class EncryptFnReturnType {
   String iv;
   String s;
 
-  EncryptFnReturnType.from(
-      {required this.ct, required this.iv, required this.s});
+  EncryptFnReturnType.from({
+    required this.ct,
+    required this.iv,
+    required this.s,
+  });
 }
 
 class PairReturnType {
@@ -150,11 +160,12 @@ class PairReturnType {
   String priv;
   String pub;
 
-  PairReturnType.from(
-      {required this.epriv,
-      required this.epub,
-      required this.priv,
-      required this.pub});
+  PairReturnType.from({
+    required this.epriv,
+    required this.epub,
+    required this.priv,
+    required this.pub,
+  });
 }
 
 class DefaultOptVerifyCheckType {
@@ -187,14 +198,19 @@ class PrepReturnType {
   dynamic col; // :
   num forward; // >
 
-  PrepReturnType.from(
-      {required this.key,
-      required this.dot,
-      required this.col,
-      required this.forward});
+  PrepReturnType.from({
+    required this.key,
+    required this.dot,
+    required this.col,
+    required this.forward,
+  });
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'#': key, '.': dot, ':': col, '>': forward};
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    '#': key,
+    '.': dot,
+    ':': col,
+    '>': forward,
+  };
 }
 
 class KeyPair {
@@ -210,20 +226,21 @@ class SignNodeValueReturnType {
 
   SignNodeValueReturnType.from({required this.col, required this.tilde});
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        ':': col,
-        '~': tilde,
-      };
+  Map<String, dynamic> toJson() => <String, dynamic>{':': col, '~': tilde};
 
   factory SignNodeValueReturnType.fromJson(Map<String, dynamic> parsedJson) {
     return SignNodeValueReturnType.from(
-        col: parsedJson[':'] ?? parsedJson['m'],
-        tilde: parsedJson['~'] ?? parsedJson['s']);
+      col: parsedJson[':'] ?? parsedJson['m'],
+      tilde: parsedJson['~'] ?? parsedJson['s'],
+    );
   }
 }
 
-typedef GraphSinger = FutureOr<TTGraphData> Function(
-    TTGraphData graph, TTGraphData graphSnapshot);
+typedef GraphSinger =
+    FutureOr<TTGraphData> Function(
+      TTGraphData graph,
+      TTGraphData graphSnapshot,
+    );
 
 class CreateUserReturnType {
   String alias;
@@ -233,31 +250,33 @@ class CreateUserReturnType {
   String epriv;
   String priv;
 
-  CreateUserReturnType.from(
-      {required this.alias,
-      required this.auth,
-      required this.epub,
-      required this.pub,
-      required this.epriv,
-      required this.priv});
+  CreateUserReturnType.from({
+    required this.alias,
+    required this.auth,
+    required this.epub,
+    required this.pub,
+    required this.epriv,
+    required this.priv,
+  });
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'alias': alias,
-        'auth': auth,
-        'epub': epub,
-        'pub': pub,
-        'epriv': epriv,
-        'priv': priv,
-      };
+    'alias': alias,
+    'auth': auth,
+    'epub': epub,
+    'pub': pub,
+    'epriv': epriv,
+    'priv': priv,
+  };
 
   factory CreateUserReturnType.fromJson(Map<String, dynamic> parsedJson) {
     return CreateUserReturnType.from(
-        alias: parsedJson['alias'],
-        auth: parsedJson['auth'],
-        epub: parsedJson['epub'],
-        pub: parsedJson['pub'],
-        epriv: parsedJson['epriv'],
-        priv: parsedJson['priv']);
+      alias: parsedJson['alias'],
+      auth: parsedJson['auth'],
+      epub: parsedJson['epub'],
+      pub: parsedJson['pub'],
+      epriv: parsedJson['epriv'],
+      priv: parsedJson['priv'],
+    );
   }
 }
 

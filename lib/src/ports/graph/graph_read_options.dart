@@ -4,6 +4,10 @@ class GraphReadOptions {
   final String? backward; // <
   final String? modulo; // %
 
-  const GraphReadOptions(
-      {this.point, this.forward, this.backward, this.modulo});
+  const GraphReadOptions({
+    this.point,
+    this.forward,
+    this.backward,
+    this.modulo,
+  });
 }

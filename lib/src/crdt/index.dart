@@ -31,8 +31,11 @@ TTGraphData addMissingState(TTGraphData graphData) {
   return updatedGraphData;
 }
 
-TTGraphData? diffTTCRDT(TTGraphData updatedGraph, TTGraphData existingGraph,
-    {CrdtOption? opts}) {
+TTGraphData? diffTTCRDT(
+  TTGraphData updatedGraph,
+  TTGraphData existingGraph, {
+  CrdtOption? opts,
+}) {
   opts ??= CrdtOption(lexical: jsonEncode, futureGrace: 10 * 60 * 1000);
 
   var machineState = DateTime.now().millisecondsSinceEpoch,
@@ -61,8 +64,9 @@ TTGraphData? diffTTCRDT(TTGraphData updatedGraph, TTGraphData existingGraph,
 
     var hasUpdates = false;
 
-    final TTNode updates =
-        TTNode(nodeMetaData: TTNodeMeta(key: soul.key, forward: TTNodeState()));
+    final TTNode updates = TTNode(
+      nodeMetaData: TTNodeMeta(key: soul.key, forward: TTNodeState()),
+    );
 
     for (final key in updatedState.keys) {
       final existingKeyState = existingState[key];
@@ -97,8 +101,11 @@ TTGraphData? diffTTCRDT(TTGraphData updatedGraph, TTGraphData existingGraph,
   return allUpdates.isNotEmpty ? allUpdates : null;
 }
 
-TTNode? mergeTTNodes(TTNode? existing, TTNode? updates,
-    {MutableEnum mut = MutableEnum.immutable}) {
+TTNode? mergeTTNodes(
+  TTNode? existing,
+  TTNode? updates, {
+  MutableEnum mut = MutableEnum.immutable,
+}) {
   if (existing == null) {
     return updates;
   }
@@ -127,13 +134,16 @@ TTNode? mergeTTNodes(TTNode? existing, TTNode? updates,
     ...updates,
     "_": {
       "#": existingMeta.key,
-      ">": {...?existingMeta.forward, ...?updates.nodeMetaData?.forward}
-    }
+      ">": {...?existingMeta.forward, ...?updates.nodeMetaData?.forward},
+    },
   });
 }
 
-TTGraphData mergeGraph(TTGraphData existing, TTGraphData diff,
-    {MutableEnum mut = MutableEnum.immutable}) {
+TTGraphData mergeGraph(
+  TTGraphData existing,
+  TTGraphData diff, {
+  MutableEnum mut = MutableEnum.immutable,
+}) {
   final TTGraphData result = existing;
   for (final soul in diff.keys) {
     result[soul] = mergeTTNodes(existing[soul], diff[soul], mut: mut);

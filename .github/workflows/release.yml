@@ -1,0 +1,24 @@
+name: release
+
+on:
+  push:
+    branches: [ "main", "chore/*", "feat/*", "fix/*" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  releaseExpected:
+    name: releaseExpected
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Dry Run Publish
+        run: flutter pub publish --dry-run

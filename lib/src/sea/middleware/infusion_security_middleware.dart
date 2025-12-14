@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -17,7 +16,9 @@ class InfusionSecurityMiddleware {
   /// Intercepts data writing to the graph.
   /// Encrypts/Signs every field value before it touches the graph.
   static FutureOr<TTGraphData?> onWrite(
-      TTGraphData data, TTGraphData graphSnapshot) async {
+    TTGraphData data,
+    TTGraphData graphSnapshot,
+  ) async {
     final TTGraphData protected = TTGraphData();
 
     for (final soul in data.keys) {
@@ -46,10 +47,7 @@ class InfusionSecurityMiddleware {
           // Uses policyId=0 (default) and empty metadata for now.
           // Accessing ffi directly from InfusionManager
           final vault = await InfusionManager.vault;
-          final sealedFrame = await vault.seal(
-            data: bytes,
-            policyId: 0,
-          );
+          final sealedFrame = await vault.seal(data: bytes, policyId: 0);
 
           // Encode as hex or base64 to store in graph string
           // Prefixing to identify it's an Infusion Frame
@@ -70,7 +68,9 @@ class InfusionSecurityMiddleware {
   /// Intercepts data reading from the graph.
   /// Decrypts/Verifies every field value.
   static FutureOr<TTGraphData?> onRead(
-      TTGraphData data, TTGraphData graphSnapshot) async {
+    TTGraphData data,
+    TTGraphData graphSnapshot,
+  ) async {
     final TTGraphData revealed = TTGraphData();
 
     for (final soul in data.keys) {
@@ -95,11 +95,11 @@ class InfusionSecurityMiddleware {
             // Open (Verify Signature + Decrypt)
             final vault = await InfusionManager.vault;
             final clearBytes = await vault.open(frameBytes);
-            
+
             // Deserialize
             final jsonStr = utf8.decode(clearBytes);
             final originalValue = jsonDecode(jsonStr);
-            
+
             revealedNode[key] = originalValue;
           } catch (e) {
             // Verification failed or Decryption failed.
@@ -116,7 +116,7 @@ class InfusionSecurityMiddleware {
           // For transition/compatibility, we might pass it.
           // User said "O cofre serve para armazenar qualquer tipo de dados".
           // Better safe: If it's not sealed, it might be system data or legacy.
-          // Let's pass it through but maybe flag it? 
+          // Let's pass it through but maybe flag it?
           // For now: Pass through.
           revealedNode[key] = value;
         }

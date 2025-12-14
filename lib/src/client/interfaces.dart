@@ -21,7 +21,10 @@ class PathData {
   PathData({required this.souls, this.value, this.complete = false});
 }
 
-typedef TTMiddleware = FutureOr<TTGraphData?> Function(
-    TTGraphData updates, TTGraphData existingGraph);
+typedef TTMiddleware =
+    FutureOr<TTGraphData?> Function(
+      TTGraphData updates,
+      TTGraphData existingGraph,
+    );
 
 enum TTMiddlewareType { read, write }

@@ -8,8 +8,9 @@ class DefaultGraphTransportAdapter implements GraphTransportPort {
 
   final TTGraphConnector _connector;
   late final GraphTransportEvents _events = GraphTransportEvents(
-    graphData: _connector.events.graphData
-        as dynamic, // erase generic for port cohesion
+    graphData:
+        _connector.events.graphData
+            as dynamic, // erase generic for port cohesion
     connection: _connector.events.connection,
   );
 

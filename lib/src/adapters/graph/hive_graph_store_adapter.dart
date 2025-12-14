@@ -25,8 +25,10 @@ class HiveGraphStoreAdapter implements GraphStorePort {
   }
 
   @override
-  Future<String?> fetchNodeJson(String soul,
-      {GraphReadOptions? options}) async {
+  Future<String?> fetchNodeJson(
+    String soul, {
+    GraphReadOptions? options,
+  }) async {
     if (_box == null || !_box!.isOpen || !_box!.containsKey(soul)) {
       return null;
     }

@@ -13,10 +13,11 @@ class TTGraphConnectorEventType {
   final TTEvent<TTMsg, dynamic, dynamic> receiveMessage;
   final TTEvent<bool, dynamic, dynamic> connection;
 
-  TTGraphConnectorEventType(
-      {required this.graphData,
-      required this.receiveMessage,
-      required this.connection});
+  TTGraphConnectorEventType({
+    required this.graphData,
+    required this.receiveMessage,
+    required this.connection,
+  });
 }
 
 abstract class TTGraphConnector {
@@ -31,17 +32,22 @@ abstract class TTGraphConnector {
 
   TTGraphConnector({this.name = 'TTGraphConnector'}) {
     isConnected = false;
-    inputQueue =
-        TTProcessQueue<TTMsg, dynamic, dynamic>(name: '$name.inputQueue');
-    outputQueue =
-        TTProcessQueue<TTMsg, dynamic, dynamic>(name: '$name.outputQueue');
+    inputQueue = TTProcessQueue<TTMsg, dynamic, dynamic>(
+      name: '$name.inputQueue',
+    );
+    outputQueue = TTProcessQueue<TTMsg, dynamic, dynamic>(
+      name: '$name.outputQueue',
+    );
     events = TTGraphConnectorEventType(
       graphData: TTEvent<TTGraphData, String?, String?>(
-          name: '$name.events.graphData'),
-      receiveMessage:
-          TTEvent<TTMsg, dynamic, dynamic>(name: '$name.events.receiveMessage'),
-      connection:
-          TTEvent<bool, dynamic, dynamic>(name: '$name.events.connection'),
+        name: '$name.events.graphData',
+      ),
+      receiveMessage: TTEvent<TTMsg, dynamic, dynamic>(
+        name: '$name.events.receiveMessage',
+      ),
+      connection: TTEvent<bool, dynamic, dynamic>(
+        name: '$name.events.connection',
+      ),
     );
     events.connection.on(__onConnectedChange);
   }

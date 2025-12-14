@@ -6,9 +6,15 @@ abstract class GraphMergePort {
 
   TTGraphData? diffGraph(TTGraphData updatedGraph, TTGraphData existingGraph);
 
-  TTGraphData mergeGraph(TTGraphData existing, TTGraphData diff,
-      {MutableEnum mut = MutableEnum.immutable});
+  TTGraphData mergeGraph(
+    TTGraphData existing,
+    TTGraphData diff, {
+    MutableEnum mut = MutableEnum.immutable,
+  });
 
-  TTNode? mergeNodes(TTNode? existing, TTNode? updates,
-      {MutableEnum mut = MutableEnum.immutable});
+  TTNode? mergeNodes(
+    TTNode? existing,
+    TTNode? updates, {
+    MutableEnum mut = MutableEnum.immutable,
+  });
 }

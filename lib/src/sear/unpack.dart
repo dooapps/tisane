@@ -37,8 +37,8 @@ dynamic unpack([dynamic passedValue, String? key, TTNode? node]) {
   final soul = node.nodeMetaData?.key;
   final state = node.nodeMetaData != null
       ? node.nodeMetaData!.forward != null
-          ? node.nodeMetaData!.forward![key]
-          : null
+            ? node.nodeMetaData!.forward![key]
+            : null
       : null;
 
   if (value is List &&
@@ -66,17 +66,21 @@ TTNode unpackNode(TTNode node, [MutableEnum mut = MutableEnum.immutable]) {
   return result;
 }
 
-TTGraphData unpackGraph(TTGraphData graph,
-    [MutableEnum mut = MutableEnum.immutable]) {
-  final TTGraphData unpackedGraph =
-      mut == MutableEnum.mutable ? graph : TTGraphData();
+TTGraphData unpackGraph(
+  TTGraphData graph, [
+  MutableEnum mut = MutableEnum.immutable,
+]) {
+  final TTGraphData unpackedGraph = mut == MutableEnum.mutable
+      ? graph
+      : TTGraphData();
 
   for (final soul in graph.keys) {
     final node = graph[soul];
     final pub = pubFromSoul(soul);
 
-    unpackedGraph[soul] =
-        node != null && pub.isNotEmpty ? unpackNode(node, mut) : node;
+    unpackedGraph[soul] = node != null && pub.isNotEmpty
+        ? unpackNode(node, mut)
+        : node;
   }
 
   return unpackedGraph;

@@ -1,8 +1,8 @@
 import '../_internal_blind_scaling.dart' as blind;
 
 typedef FutureIntEncoder = Future<int> Function(double value, String assetType);
-typedef FutureDoubleDecoder = Future<double> Function(
-    int value, String assetType);
+typedef FutureDoubleDecoder =
+    Future<double> Function(int value, String assetType);
 
 /// Encapsulates crypto/FFI helpers so they can be stubbed in tests.
 abstract class TTCryptoPort {
@@ -14,13 +14,13 @@ abstract class TTCryptoPort {
 }
 
 class FbblCryptoPort implements TTCryptoPort {
-  const FbblCryptoPort(
-      {blind.FutureIntResolver? resolver,
-      FutureIntEncoder? encoder,
-      FutureDoubleDecoder? decoder})
-      : _resolver = resolver,
-        _encoder = encoder,
-        _decoder = decoder;
+  const FbblCryptoPort({
+    blind.FutureIntResolver? resolver,
+    FutureIntEncoder? encoder,
+    FutureDoubleDecoder? decoder,
+  }) : _resolver = resolver,
+       _encoder = encoder,
+       _decoder = decoder;
 
   final blind.FutureIntResolver? _resolver;
   final FutureIntEncoder? _encoder;

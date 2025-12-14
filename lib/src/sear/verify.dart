@@ -9,17 +9,25 @@ import 'package:webcrypto/webcrypto.dart' as crypto;
 
 import '../types/sear/types.dart';
 
-final DefaultOptVerifyType DEFAULT_OPTS =
-    DefaultOptVerifyType.from(encode: 'base64');
+final DefaultOptVerifyType DEFAULT_OPTS = DefaultOptVerifyType.from(
+  encode: 'base64',
+);
 
 Future<crypto.EcdsaPublicKey> importKey(String pub, [PairReturnType? d]) {
   final token = jwk(pub, d?.priv);
   return crypto.EcdsaPublicKey.importJsonWebKey(
-      token.toJson(), crypto.EllipticCurve.p256);
+    token.toJson(),
+    crypto.EllipticCurve.p256,
+  );
 }
 
-Future<bool> verifyHashSignature(Uint8List hash, String signature, String pub,
-    [PairReturnType? d, DefaultOptVerifyType? opt]) async {
+Future<bool> verifyHashSignature(
+  Uint8List hash,
+  String signature,
+  String pub, [
+  PairReturnType? d,
+  DefaultOptVerifyType? opt,
+]) async {
   opt ??= DEFAULT_OPTS;
 
   final key = await importKey(pub);
@@ -33,8 +41,13 @@ Future<bool> verifyHashSignature(Uint8List hash, String signature, String pub,
   return false;
 }
 
-Future<bool> verifySignature(dynamic data, String signature, String pub,
-    [PairReturnType? d, DefaultOptVerifyType? opt]) async {
+Future<bool> verifySignature(
+  dynamic data,
+  String signature,
+  String pub, [
+  PairReturnType? d,
+  DefaultOptVerifyType? opt,
+]) async {
   opt ??= DEFAULT_OPTS;
 
   final hash = await sha256(data);
@@ -42,8 +55,11 @@ Future<bool> verifySignature(dynamic data, String signature, String pub,
   return verifyHashSignature(hash.asUint8List(), signature, pub, d, opt);
 }
 
-Future<dynamic> verify(dynamic data, dynamic pair,
-    [DefaultOptVerifyType? opt]) async {
+Future<dynamic> verify(
+  dynamic data,
+  dynamic pair, [
+  DefaultOptVerifyType? opt,
+]) async {
   if (data == null) {
     throw ("data `null` not allowed.");
   }
@@ -55,7 +71,12 @@ Future<dynamic> verify(dynamic data, dynamic pair,
   final pub = pair is PairReturnType ? pair.pub : pair;
 
   if (await verifySignature(
-      json['m'] ?? json[':'], json['s'] ?? json['~'], pub, pair, opt)) {
+    json['m'] ?? json[':'],
+    json['s'] ?? json['~'],
+    pub,
+    pair,
+    opt,
+  )) {
     return json['m'] ?? json[':'];
   }
 
@@ -66,7 +87,10 @@ Future<dynamic> verify(dynamic data, dynamic pair,
   return null;
 }
 
-Future<bool> oldVerify(dynamic data, String pub,
-    [DefaultOptVerifyType? opt]) async {
+Future<bool> oldVerify(
+  dynamic data,
+  String pub, [
+  DefaultOptVerifyType? opt,
+]) async {
   throw ('Legacy fallback validation not yet supported');
 }

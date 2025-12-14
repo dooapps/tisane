@@ -6,7 +6,7 @@ import '../../ports/transport_port.dart';
 /// Adapter that produces WebSocket-backed graph connectors via the transport port.
 class WebSocketTransportAdapter implements TTTransportPort {
   WebSocketTransportAdapter({TTLogger? logger})
-      : _logger = logger ?? createDefaultLogger();
+    : _logger = logger ?? createDefaultLogger();
 
   final TTLogger _logger;
 

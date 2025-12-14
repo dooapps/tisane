@@ -5,8 +5,8 @@ import '../../ports/logger_port.dart';
 
 class DioHttpClient implements TTHttpClient {
   DioHttpClient({Dio? dio, TTLogger? logger})
-      : _dio = dio ?? Dio(_defaultBaseOptions),
-        _logger = logger ?? createDefaultLogger() {
+    : _dio = dio ?? Dio(_defaultBaseOptions),
+      _logger = logger ?? createDefaultLogger() {
     if (dio == null) {
       _dio.interceptors.add(
         LogInterceptor(
@@ -38,8 +38,9 @@ class DioHttpClient implements TTHttpClient {
     try {
       final response = await _dio.get(
         request.url,
-        queryParameters:
-            request.queryParameters.isEmpty ? null : request.queryParameters,
+        queryParameters: request.queryParameters.isEmpty
+            ? null
+            : request.queryParameters,
         options: Options(
           headers: request.headers,
           responseType: ResponseType.plain,
@@ -56,8 +57,10 @@ class DioHttpClient implements TTHttpClient {
     } on DioException catch (error) {
       final status = error.response?.statusCode;
       final data = error.response?.data;
-      final headers = error.response?.headers.map
-              .map((key, value) => MapEntry(key, List<String>.from(value))) ??
+      final headers =
+          error.response?.headers.map.map(
+            (key, value) => MapEntry(key, List<String>.from(value)),
+          ) ??
           <String, List<String>>{};
 
       throw TTHttpException(
@@ -67,8 +70,11 @@ class DioHttpClient implements TTHttpClient {
         headers: headers,
       );
     } catch (error, stackTrace) {
-      _logger.error('Unexpected HTTP client error',
-          error: error, stackTrace: stackTrace);
+      _logger.error(
+        'Unexpected HTTP client error',
+        error: error,
+        stackTrace: stackTrace,
+      );
       rethrow;
     } finally {
       _dio.options = previousOptions;

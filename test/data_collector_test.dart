@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:test/test.dart';
 import 'package:tisane/src/data_collector.dart';
@@ -6,8 +5,9 @@ import 'package:tisane/src/data_collector.dart';
 final _runRealApiTests = Platform.environment['RUN_REAL_API_TESTS'] == 'true';
 
 void main() {
-  final skipRealApiTests =
-      _runRealApiTests ? null : 'Requires RUN_REAL_API_TESTS=true';
+  final skipRealApiTests = _runRealApiTests
+      ? null
+      : 'Requires RUN_REAL_API_TESTS=true';
   group('DataCollector.fetchStockData Yahoo API - Teste com API real', () {
     test('Deve retornar dados válidos da API real', () async {
       final String urlCollector =
@@ -16,7 +16,7 @@ void main() {
       final Map<String, dynamic> params = {
         "symbol": "PETR3.SA",
         "limit": "10",
-        "range": "1d"
+        "range": "1d",
       };
 
       final Map<String, String> headers = {
@@ -27,7 +27,7 @@ void main() {
       Map<String, String> fieldMappings = {
         "meta": "meta",
         "timestamp": "timestamp",
-        "indicators": "indicators"
+        "indicators": "indicators",
       };
 
       try {
@@ -38,16 +38,15 @@ void main() {
           headers,
           fieldMappings,
         );
-        print(jsonEncode(response["body"]["data"]));
+        // print(jsonEncode(response["body"]["data"]));
         expect(response["statusCode"], equals(200));
       } catch (e) {
-        print("Error message: $e");
+        // print("Error message: $e");
         fail("Error from API: $e");
       }
     }, skip: skipRealApiTests);
   });
-  group('DataCollector.fetchStockData Wallet Finbo API - Teste com API real',
-      () {
+  group('DataCollector.fetchStockData Wallet Finbo API - Teste com API real', () {
     test('Deve retornar dados válidos da API real', () async {
       final String urlCollector =
           "https://itva-crypto-ia-2405334676d1.herokuapp.com/v1/wallet/66cf9db3a7940580210770f7";
@@ -65,7 +64,7 @@ void main() {
         "startDate": "startDate",
         "baseInvestment": "baseInvestment",
         "balance": "balance",
-        "lastBtcPrice": "lastBtcPrice"
+        "lastBtcPrice": "lastBtcPrice",
       };
 
       try {
@@ -77,11 +76,11 @@ void main() {
           fieldMappings,
         );
 
-        print(jsonEncode(response["body"]["id"]));
+        //print(jsonEncode(response["body"]["id"]));
 
         expect(response["statusCode"], equals(200));
       } catch (e) {
-        print("Error message: $e");
+        //print("Error message: $e");
         fail("Error from API: $e");
       }
     }, skip: skipRealApiTests);
@@ -112,7 +111,7 @@ void main() {
         "previousClose": "previousClose",
         "volume": "volume",
         "marketVariation.absolut": "marketVariation.absolut",
-        "marketVariation.percent": "marketVariation.percent"
+        "marketVariation.percent": "marketVariation.percent",
       };
 
       try {
@@ -127,7 +126,7 @@ void main() {
         final body = response["body"];
         expect(response["statusCode"], equals(200));
 
-        print("Retorno da ação: ${jsonEncode(body)}");
+        //print("Retorno da ação: ${jsonEncode(body)}");
 
         // Checa se o primeiro item da lista possui os campos esperados
         expect(body, isA<List>());
@@ -135,7 +134,7 @@ void main() {
         expect(body.first["price"], isA<num>());
         expect(body.first["longName"], isA<String>());
       } catch (e) {
-        print("Erro ao chamar API B3: $e");
+        //print("Erro ao chamar API B3: $e");
         fail("Erro na chamada da API B3: $e");
       }
     }, skip: skipRealApiTests);

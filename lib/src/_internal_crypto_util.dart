@@ -12,7 +12,8 @@ int generateSecureNumericHash(String input) {
   final hash = sha256.convert(utf8.encode(sanitizedInput)).bytes;
 
   // Converte os primeiros 8 bytes em um inteiro positivo
-  return List.generate(8, (i) => hash[i])
-      .fold(0, (acc, byte) => (acc << 8) | byte)
-      .abs();
+  return List.generate(
+    8,
+    (i) => hash[i],
+  ).fold(0, (acc, byte) => (acc << 8) | byte).abs();
 }

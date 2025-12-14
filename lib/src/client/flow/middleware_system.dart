@@ -3,16 +3,17 @@ import 'dart:async';
 class MiddlewareSystem<T, U, V> {
   final String name;
   late final List<FutureOr<T?> Function(T a, [U? b, V? c])>
-      _middlewareFunctions;
+  _middlewareFunctions;
 
   MiddlewareSystem({this.name = 'MiddlewareSystem'})
-      : _middlewareFunctions = [];
+    : _middlewareFunctions = [];
 
   /// Register middleware function
   ///
   /// @param middleware The middleware function to add
   MiddlewareSystem<T, U, V> use(
-      FutureOr<T?> Function(T a, [U? b, V? c]) middleware) {
+    FutureOr<T?> Function(T a, [U? b, V? c]) middleware,
+  ) {
     if (_middlewareFunctions.contains(middleware)) {
       return this;
     }

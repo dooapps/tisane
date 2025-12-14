@@ -16,8 +16,12 @@ Future<List<num>> generateCandleVector({
   final encodedHigh = await encodeScale(high, assetType);
 
   final blindScale = await generateBlindScale(assetType);
-  final blindOHLC = await applyBlindScale(
-      [encodedOpen, encodedClose, encodedLow, encodedHigh], blindScale);
+  final blindOHLC = await applyBlindScale([
+    encodedOpen,
+    encodedClose,
+    encodedLow,
+    encodedHigh,
+  ], blindScale);
 
   final fbblNumber = generateSecureNumericHash(ticker);
 
@@ -36,7 +40,8 @@ Future<List<List<num>>> generateCandleVectors({
   final int length = timestamps.length;
   if ([opens, closes, lows, highs].any((list) => list.length != length)) {
     throw ArgumentError(
-        'Todas as listas devem ter o mesmo tamanho e não podem estar vazias.');
+      'Todas as listas devem ter o mesmo tamanho e não podem estar vazias.',
+    );
   }
   if (length == 0) {
     throw ArgumentError('As listas não podem estar vazias.');
@@ -53,8 +58,12 @@ Future<List<List<num>>> generateCandleVectors({
     final encodedLow = await encodeScale(lows[i], assetType);
     final encodedHigh = await encodeScale(highs[i], assetType);
 
-    final blindOHLC = await applyBlindScale(
-        [encodedOpen, encodedClose, encodedLow, encodedHigh], blindScale);
+    final blindOHLC = await applyBlindScale([
+      encodedOpen,
+      encodedClose,
+      encodedLow,
+      encodedHigh,
+    ], blindScale);
 
     vectors.add([timestamps[i], ...blindOHLC, fbblNumber]);
   }

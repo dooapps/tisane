@@ -18,7 +18,7 @@ void defineGraphMergePortContract(
       final node = TTNode.fromJson({
         '_': {
           '#': 'soul',
-          '>': {'price': ts}
+          '>': {'price': ts},
         },
         'price': price,
       });
@@ -46,10 +46,14 @@ void defineGraphMergePortContract(
         final leftDiff = merge.diffGraph(left, base) ?? TTGraphData();
         final rightDiff = merge.diffGraph(right, base) ?? TTGraphData();
 
-        final leftFirst =
-            merge.mergeGraph(merge.mergeGraph(base, leftDiff), rightDiff);
-        final rightFirst =
-            merge.mergeGraph(merge.mergeGraph(base, rightDiff), leftDiff);
+        final leftFirst = merge.mergeGraph(
+          merge.mergeGraph(base, leftDiff),
+          rightDiff,
+        );
+        final rightFirst = merge.mergeGraph(
+          merge.mergeGraph(base, rightDiff),
+          leftDiff,
+        );
 
         expect(
           leftFirst['soul']?['price'],
@@ -67,8 +71,10 @@ void defineGraphMergePortContract(
       final bc = merge.mergeGraph(b, merge.diffGraph(c, b) ?? TTGraphData());
 
       final left = merge.mergeGraph(a, merge.diffGraph(bc, a) ?? TTGraphData());
-      final right =
-          merge.mergeGraph(ab, merge.diffGraph(c, ab) ?? TTGraphData());
+      final right = merge.mergeGraph(
+        ab,
+        merge.diffGraph(c, ab) ?? TTGraphData(),
+      );
 
       expect(left['soul']?['price'], equals(right['soul']?['price']));
     });

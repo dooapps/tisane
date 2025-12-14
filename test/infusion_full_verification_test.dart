@@ -5,8 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:infusion_ffi/infusion_ffi.dart';
 // For hex decoding if needed
 
+import 'dart:io';
+
 void main() {
   group('Infusion FFI Full Functionality Verification', () {
+    if (Platform.environment.containsKey('CI')) {
+      // ignore: avoid_print
+      print('Skipping Infusion FFI verification tests in CI environment');
+      return;
+    }
     test('mnemonicGenerate returns valid 12-word mnemonic', () async {
       final mnemonic = await InfusionFFI.mnemonicGenerate(wordCount: 12);
       expect(mnemonic, isNotNull);

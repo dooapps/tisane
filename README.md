@@ -33,6 +33,32 @@
 
 ---
 
-## 🚀 How to Run
-1. `flutter pub get`
-2. `flutter run`
+---
+ 
+ ## 🚀 Getting Started
+
+ Add `tisane` to your `pubspec.yaml`:
+ ```yaml
+ dependencies:
+   tisane: ^1.0.0
+ ```
+
+ ## 💡 Usage
+
+ Initialize the Infusion Manager at the start of your app:
+
+ ```dart
+ import 'package:tisane/tisane.dart';
+
+ void main() async {
+   await InfusionManager.initialize();
+   
+   // Generate a mnemonic
+   final mnemonic = await InfusionManager.generateMnemonic();
+   print('New Wallet: $mnemonic');
+ }
+ ```
+
+ ## 🛠️ Development
+ 1. `flutter pub get`
+ 2. `flutter test`

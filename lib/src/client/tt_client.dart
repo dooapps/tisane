@@ -41,10 +41,11 @@ class TTClient {
     TTOptions? options,
     TTConnectorFactory? connectorFactory,
     TTLogger? logger,
-  })  : _connectorFactory = connectorFactory ??
-            options?.connectorFactory ??
-            DefaultTTConnectorFactory(),
-        _logger = logger ?? options?.logger ?? createDefaultLogger() {
+  }) : _connectorFactory =
+           connectorFactory ??
+           options?.connectorFactory ??
+           DefaultTTConnectorFactory(),
+       _logger = logger ?? options?.logger ?? createDefaultLogger() {
     _initialize(linkClass: linkClass, options: options);
   }
 
@@ -71,8 +72,14 @@ class TTClient {
     final instance = TTGraph(mergePort: mergePort);
 
     // Register Infusion IP Vault Middleware
-    instance.use(InfusionSecurityMiddleware.onRead, kind: TTMiddlewareType.read);
-    instance.use(InfusionSecurityMiddleware.onWrite, kind: TTMiddlewareType.write);
+    instance.use(
+      InfusionSecurityMiddleware.onRead,
+      kind: TTMiddlewareType.read,
+    );
+    instance.use(
+      InfusionSecurityMiddleware.onWrite,
+      kind: TTMiddlewareType.write,
+    );
 
     instance.use(mergePort.diffGraph);
     instance.use(mergePort.diffGraph, kind: TTMiddlewareType.write);
