@@ -30,9 +30,3 @@
 - **Sincronización Descentralizada**: Utiliza CRDTs (Tipos de Datos Replicados Libres de Conflictos) para la fusión de datos sin conflictos entre pares.
 - **Almacenamiento Encriptado**: Persistencia local segura utilizando Hive, con claves protegidas por la bóveda del sistema.
 - **Arquitectura Modular**: Diseño basado en Puertos y Adaptadores para máxima flexibilidad y capacidad de prueba.
-
----
-
-## 🚀 How to Run
-1. `flutter pub get`
-2. `flutter run`
