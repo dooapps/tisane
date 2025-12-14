@@ -3,12 +3,14 @@ name: release
 on:
   push:
     branches: [ "main", "chore/*", "feat/*", "fix/*" ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  releaseExpected:
-    name: releaseExpected
+  validate_and_release:
+    name: Validate and Release Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +21,15 @@ jobs:
       
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze project source
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
 
       - name: Dry Run Publish
         run: flutter pub publish --dry-run

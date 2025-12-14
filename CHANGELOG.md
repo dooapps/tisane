@@ -1,3 +1,10 @@
+## 1.0.2
+
+- Docs: Updated README with multilingual support (PT-BR, EN-US, ES).
+- Docs: Added comprehensive documentation for package usage.
+- Example: Added `example/` directory with a working demonstration app.
+- CI: Enhanced release workflow for dynamic validation.
+
 ## 1.0.1
 
 - Fix: Resolved CI/CD pipeline issues.
