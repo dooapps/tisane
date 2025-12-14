@@ -10,6 +10,7 @@ import 'dart:io';
 void main() {
   group('Infusion FFI Full Functionality Verification', () {
     if (Platform.environment.containsKey('CI')) {
+      // ignore: avoid_print
       print('Skipping Infusion FFI verification tests in CI environment');
       return;
     }
