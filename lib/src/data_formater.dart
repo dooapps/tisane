@@ -13,10 +13,7 @@ class DataFormater {
     // Extrai e mapeia os dados
     Map<String, dynamic> formattedData = _mapYahooData(rawData, fieldMappings);
 
-    return {
-      "asset_id": assetId,
-      "data": formattedData,
-    };
+    return {"asset_id": assetId, "data": formattedData};
   }
 
   // Mapeia os dados do Yahoo Finance
@@ -44,7 +41,8 @@ class DataFormater {
 
   // Mapeia os indicadores (OHLCV)
   static Map<String, List<dynamic>> _mapIndicators(
-      Map<String, dynamic> indicators) {
+    Map<String, dynamic> indicators,
+  ) {
     if (!indicators.containsKey('quote') ||
         indicators['quote'] == null ||
         indicators['quote'].isEmpty) {

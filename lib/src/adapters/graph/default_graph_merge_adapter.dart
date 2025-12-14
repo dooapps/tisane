@@ -15,12 +15,16 @@ class DefaultGraphMergePort implements GraphMergePort {
       crdt.diffTTCRDT(updatedGraph, existingGraph);
 
   @override
-  TTGraphData mergeGraph(TTGraphData existing, TTGraphData diff,
-          {MutableEnum mut = MutableEnum.immutable}) =>
-      crdt.mergeGraph(existing, diff, mut: mut);
+  TTGraphData mergeGraph(
+    TTGraphData existing,
+    TTGraphData diff, {
+    MutableEnum mut = MutableEnum.immutable,
+  }) => crdt.mergeGraph(existing, diff, mut: mut);
 
   @override
-  TTNode? mergeNodes(TTNode? existing, TTNode? updates,
-          {MutableEnum mut = MutableEnum.immutable}) =>
-      crdt.mergeTTNodes(existing, updates, mut: mut);
+  TTNode? mergeNodes(
+    TTNode? existing,
+    TTNode? updates, {
+    MutableEnum mut = MutableEnum.immutable,
+  }) => crdt.mergeTTNodes(existing, updates, mut: mut);
 }

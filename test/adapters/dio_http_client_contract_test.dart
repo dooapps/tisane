@@ -12,12 +12,18 @@ class _SuccessAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options,
-      Stream<List<int>>? requestStream, Future? cancelFuture) async {
-    return ResponseBody.fromBytes(Uint8List.fromList('ok'.codeUnits), 200,
-        headers: {
-          Headers.contentTypeHeader: ['text/plain']
-        });
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<List<int>>? requestStream,
+    Future? cancelFuture,
+  ) async {
+    return ResponseBody.fromBytes(
+      Uint8List.fromList('ok'.codeUnits),
+      200,
+      headers: {
+        Headers.contentTypeHeader: ['text/plain'],
+      },
+    );
   }
 }
 
@@ -26,12 +32,18 @@ class _ErrorAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options,
-      Stream<List<int>>? requestStream, Future? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<List<int>>? requestStream,
+    Future? cancelFuture,
+  ) async {
     throw DioException(
       requestOptions: options,
-      response:
-          Response(requestOptions: options, statusCode: 500, data: 'fail'),
+      response: Response(
+        requestOptions: options,
+        statusCode: 500,
+        data: 'fail',
+      ),
       message: 'server error',
       type: DioExceptionType.badResponse,
     );

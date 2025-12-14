@@ -27,8 +27,10 @@ class DataCollector {
     final requestUrl = '$urlCollector$queryString';
 
     if (logRequests) {
-      effectiveLogger
-          .debug('Fetching data from collector', context: {'url': requestUrl});
+      effectiveLogger.debug(
+        'Fetching data from collector',
+        context: {'url': requestUrl},
+      );
     }
 
     final request = TTHttpRequest(
@@ -44,10 +46,10 @@ class DataCollector {
       final body = _parseResponse(response.data);
 
       if (logResponses) {
-        effectiveLogger.debug('Collector response received', context: {
-          'url': requestUrl,
-          'statusCode': response.statusCode,
-        });
+        effectiveLogger.debug(
+          'Collector response received',
+          context: {'url': requestUrl, 'statusCode': response.statusCode},
+        );
       }
 
       return {
@@ -57,12 +59,11 @@ class DataCollector {
       };
     } on TTHttpException catch (error) {
       if (logErrors) {
-        effectiveLogger.warn('Collector HTTP error',
-            context: {
-              'url': requestUrl,
-              'statusCode': error.statusCode,
-            },
-            error: error.message);
+        effectiveLogger.warn(
+          'Collector HTTP error',
+          context: {'url': requestUrl, 'statusCode': error.statusCode},
+          error: error.message,
+        );
       }
 
       return {
@@ -71,13 +72,13 @@ class DataCollector {
         'success': false,
       };
     } catch (error, stackTrace) {
-      effectiveLogger.error('Unexpected collector error',
-          context: {'url': requestUrl}, error: error, stackTrace: stackTrace);
-      return {
-        'statusCode': 500,
-        'error': error.toString(),
-        'success': false,
-      };
+      effectiveLogger.error(
+        'Unexpected collector error',
+        context: {'url': requestUrl},
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return {'statusCode': 500, 'error': error.toString(), 'success': false};
     }
   }
 

@@ -23,12 +23,15 @@ void defineGraphStorePortContract(
       dispose(store);
     });
 
-    TTGraphData graphWith(String soul, Map<String, dynamic> value,
-        {int ts = 1}) {
+    TTGraphData graphWith(
+      String soul,
+      Map<String, dynamic> value, {
+      int ts = 1,
+    }) {
       final node = TTNode.fromJson({
         '_': {
           '#': soul,
-          '>': {for (final k in value.keys) k: ts}
+          '>': {for (final k in value.keys) k: ts},
         },
         ...value,
       });
@@ -65,8 +68,11 @@ void defineGraphStorePortContract(
     });
 
     test('missing keys return null and options tolerated', () async {
-      final opts =
-          const GraphReadOptions(point: '.', forward: '>', backward: '<');
+      final opts = const GraphReadOptions(
+        point: '.',
+        forward: '>',
+        backward: '<',
+      );
       expect(await store.fetchNode('missing', options: opts), isNull);
       expect(store.fetchNodeSync('missing', options: opts), isNull);
       expect(await store.fetchNodeJson('missing', options: opts), isNull);

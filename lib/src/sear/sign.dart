@@ -11,8 +11,9 @@ import '../types/tt.dart';
 
 import '../types/sear/types.dart';
 
-final DefaultOptSignType DEFAULT_OPTS =
-    DefaultOptSignType.from(encode: 'base64');
+final DefaultOptSignType DEFAULT_OPTS = DefaultOptSignType.from(
+  encode: 'base64',
+);
 
 PrepReturnType prep(dynamic val, String key, TTNode node, String soul) {
   return PrepReturnType.from(
@@ -21,8 +22,8 @@ PrepReturnType prep(dynamic val, String key, TTNode node, String soul) {
     col: parse(val),
     forward: node.nodeMetaData != null
         ? node.nodeMetaData!.forward != null
-            ? node.nodeMetaData!.forward![key] ?? 0
-            : 0
+              ? node.nodeMetaData!.forward![key] ?? 0
+              : 0
         : 0,
   );
 }
@@ -43,21 +44,29 @@ Future<Uint8List> hashNodeKey(TTNode node, String key) {
   return hashForSignature(prepped.toJson());
 }
 
-Future<String> signHash(Uint8List hash, PairReturnType pair,
-    [String? encoding]) async {
+Future<String> signHash(
+  Uint8List hash,
+  PairReturnType pair, [
+  String? encoding,
+]) async {
   encoding ??= DEFAULT_OPTS.encode;
 
   final token = jwk(pair.pub, pair.priv);
 
   final signKey = await crypto.EcdsaPrivateKey.importJsonWebKey(
-      token.toJson(), crypto.EllipticCurve.p256);
+    token.toJson(),
+    crypto.EllipticCurve.p256,
+  );
 
   final sig = await signKey.signBytes(hash, crypto.Hash.sha256);
   return base64Encode(sig);
 }
 
-Future<dynamic> sign(dynamic data, PairReturnType pair,
-    [DefaultOptSignType? opt]) async {
+Future<dynamic> sign(
+  dynamic data,
+  PairReturnType pair, [
+  DefaultOptSignType? opt,
+]) async {
   opt ??= DEFAULT_OPTS;
 
   final json = parse(data);
@@ -92,8 +101,11 @@ Future<dynamic> sign(dynamic data, PairReturnType pair,
 }
 
 Future<SignNodeValueReturnType> signNodeValue(
-    TTNode node, String key, PairReturnType pair,
-    [String? encoding]) async {
+  TTNode node,
+  String key,
+  PairReturnType pair, [
+  String? encoding,
+]) async {
   encoding ??= DEFAULT_OPTS.encode;
 
   final data = node[key];
@@ -115,8 +127,11 @@ Future<SignNodeValueReturnType> signNodeValue(
   return SignNodeValueReturnType.fromJson({':': json, '~': sig});
 }
 
-Future<TTNode> signNode(TTNode node, PairReturnType pair,
-    [String? encoding]) async {
+Future<TTNode> signNode(
+  TTNode node,
+  PairReturnType pair, [
+  String? encoding,
+]) async {
   encoding ??= DEFAULT_OPTS.encode;
 
   final TTNode signedNode = TTNode.fromJson({'_': node.nodeMetaData?.toJson()});
@@ -129,15 +144,19 @@ Future<TTNode> signNode(TTNode node, PairReturnType pair,
       continue;
     }
 
-    signedNode[key] =
-        jsonEncode(await signNodeValue(node, key, pair, encoding));
+    signedNode[key] = jsonEncode(
+      await signNodeValue(node, key, pair, encoding),
+    );
   }
 
   return signedNode;
 }
 
-Future<TTGraphData> signGraph(TTGraphData graph, PairReturnType pair,
-    [String? encoding]) async {
+Future<TTGraphData> signGraph(
+  TTGraphData graph,
+  PairReturnType pair, [
+  String? encoding,
+]) async {
   encoding ??= DEFAULT_OPTS.encode;
 
   final modifiedGraph = graph;

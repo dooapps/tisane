@@ -14,10 +14,10 @@ class TTProcessQueue<T extends TTMsg, U, V> extends TTQueue<T> {
 
   late List<T> alreadyProcessed;
 
-  TTProcessQueue(
-      {String name = 'TTProcessQueue',
-      this.processDupes = ProcessDupesOptionType.processDupes})
-      : super(name: name) {
+  TTProcessQueue({
+    String name = 'TTProcessQueue',
+    this.processDupes = ProcessDupesOptionType.processDupes,
+  }) : super(name: name) {
     alreadyProcessed = [];
     isProcessing = false;
     completed = TTEvent<T, dynamic, dynamic>(name: '$name.processed');

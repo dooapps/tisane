@@ -10,8 +10,11 @@ import '../types/sear/types.dart';
 
 final DefaultAESKey DEFAULT_OPTS = DefaultAESKey.from(name: 'AES-GCM');
 
-Future<crypto.AesGcmSecretKey> importAesKey(String key,
-    [ByteBuffer? salt, DefaultAESKey? opt]) async {
+Future<crypto.AesGcmSecretKey> importAesKey(
+  String key, [
+  ByteBuffer? salt,
+  DefaultAESKey? opt,
+]) async {
   opt ??= DEFAULT_OPTS;
 
   final combo = key + (salt?.asUint8List() ?? Shims.random(8)).toString();

@@ -6,11 +6,16 @@ import 'shims.dart';
 
 import '../types/sear/types.dart';
 
-final DefaultAESEncryptKey DEFAULT_OPTS =
-    DefaultAESEncryptKey.from(encode: 'base64', name: 'AES-GCM');
+final DefaultAESEncryptKey DEFAULT_OPTS = DefaultAESEncryptKey.from(
+  encode: 'base64',
+  name: 'AES-GCM',
+);
 
-Future<dynamic> encrypt(dynamic data, dynamic pair,
-    [DefaultAESEncryptKey? opt]) async {
+Future<dynamic> encrypt(
+  dynamic data,
+  dynamic pair, [
+  DefaultAESEncryptKey? opt,
+]) async {
   if (data == null) {
     throw ("`null` not allowed.");
   }
@@ -22,11 +27,14 @@ Future<dynamic> encrypt(dynamic data, dynamic pair,
 
   final rand = {
     's': Shims.random(9),
-    'iv': Shims.random(15)
+    'iv': Shims.random(15),
   }; // consider making this 9 and 15 or 18 or 12 to reduce == padding.
 
   final aesKey = await importAesKey(
-      key, rand['s']?.buffer, DefaultAESKey.from(name: opt.name));
+    key,
+    rand['s']?.buffer,
+    DefaultAESKey.from(name: opt.name),
+  );
 
   final ct = await aesKey.encryptBytes(Shims.textEncoder(msg), rand['iv']!);
 

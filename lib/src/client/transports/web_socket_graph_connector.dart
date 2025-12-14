@@ -20,19 +20,23 @@ class WebSocketGraphConnector extends TTGraphWireConnector {
   WebSocketChannel _connectWebSocket() {
     final ws = WebSocketChannel.connect(Uri.parse(url));
 
-    ws.stream.listen((event) {
-      if (!isLocalConnected) {
-        events.connection.trigger(true);
-      }
-      isLocalConnected = true;
-      _onReceiveSocketData(event);
-    }, onError: (_, __) {
-      events.connection.trigger(false);
-    }, onDone: () {
-      isLocalConnected = false;
-      events.connection.trigger(false);
-      _ws = _connectWebSocket();
-    });
+    ws.stream.listen(
+      (event) {
+        if (!isLocalConnected) {
+          events.connection.trigger(true);
+        }
+        isLocalConnected = true;
+        _onReceiveSocketData(event);
+      },
+      onError: (_, __) {
+        events.connection.trigger(false);
+      },
+      onDone: () {
+        isLocalConnected = false;
+        events.connection.trigger(false);
+        _ws = _connectWebSocket();
+      },
+    );
 
     return ws;
   }

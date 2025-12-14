@@ -1,9 +1,10 @@
 import 'dart:math' as math;
 
-String pseudoRandomText(
-    [int length = 24,
-    String charset =
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXZabcdefghijklmnopqrstuvwxyz']) {
+String pseudoRandomText([
+  int length = 24,
+  String charset =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXZabcdefghijklmnopqrstuvwxyz',
+]) {
   final buffer = StringBuffer();
   final random = math.Random();
 

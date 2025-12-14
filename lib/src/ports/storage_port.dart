@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 /// Function signature for initializing the storage backend.
-typedef StorageInitializer = Future<void> Function(
-    {Uint8List? encryptionKeyUint8List, String? key});
+typedef StorageInitializer =
+    Future<void> Function({Uint8List? encryptionKeyUint8List, String? key});
 
 /// Function signature for checking whether the storage backend is open.
 typedef StorageOpenCheck = bool Function();
@@ -12,24 +12,29 @@ StorageOpenCheck? storageOpenChecker;
 
 /// Storage abstraction that mirrors the existing Hive-based behaviour.
 abstract class TTStoragePort {
-  Future<void> ensureInitialized(
-      {Uint8List? encryptionKeyUint8List, String? key});
+  Future<void> ensureInitialized({
+    Uint8List? encryptionKeyUint8List,
+    String? key,
+  });
 
   bool get isOpen;
 }
 
 class HiveStoragePort implements TTStoragePort {
-  const HiveStoragePort(
-      {StorageInitializer? initializer, StorageOpenCheck? openCheck})
-      : _initializer = initializer,
-        _openCheck = openCheck;
+  const HiveStoragePort({
+    StorageInitializer? initializer,
+    StorageOpenCheck? openCheck,
+  }) : _initializer = initializer,
+       _openCheck = openCheck;
 
   final StorageInitializer? _initializer;
   final StorageOpenCheck? _openCheck;
 
   @override
-  Future<void> ensureInitialized(
-      {Uint8List? encryptionKeyUint8List, String? key}) async {
+  Future<void> ensureInitialized({
+    Uint8List? encryptionKeyUint8List,
+    String? key,
+  }) async {
     final initializer = _initializer ?? storageInitializer;
     if (initializer == null) {
       throw StateError('TT storage initializer not registered');

@@ -13,10 +13,12 @@ String generateMessageId() {
 }
 
 List<List<String>> diffSets(
-    final List<String> initial, final List<String> updated) {
+  final List<String> initial,
+  final List<String> updated,
+) {
   return [
     updated.where((key) => !initial.contains(key)).toList(),
-    initial.where((key) => !updated.contains(key)).toList()
+    initial.where((key) => !updated.contains(key)).toList(),
   ];
 }
 
@@ -104,8 +106,9 @@ TTGraphData flattenGraphData(GraphMergePort mergePort, TTGraphData data) {
 
   for (final graph in graphs) {
     final diff = mergePort.diffGraph(graph, flatGraph);
-    flatGraph =
-        !isNull(diff) ? mergePort.mergeGraph(flatGraph, diff!) : flatGraph;
+    flatGraph = !isNull(diff)
+        ? mergePort.mergeGraph(flatGraph, diff!)
+        : flatGraph;
   }
 
   return flatGraph;
@@ -116,27 +119,33 @@ PathData getPathData(List<String> keys, TTGraphData graph) {
 
   if (keys.length == 1) {
     return PathData(
-        souls: keys,
-        complete: graph.containsKey(lastKey),
-        value: graph[lastKey]);
+      souls: keys,
+      complete: graph.containsKey(lastKey),
+      value: graph[lastKey],
+    );
   }
 
-  PathData getPathDataParent =
-      getPathData(keys.sublist(0, keys.length - 1), graph);
+  PathData getPathDataParent = getPathData(
+    keys.sublist(0, keys.length - 1),
+    graph,
+  );
 
   if (!isObject(getPathDataParent.value)) {
     return PathData(
-        souls: getPathDataParent.souls,
-        complete:
-            getPathDataParent.complete || !isNull(getPathDataParent.value),
-        value: null);
+      souls: getPathDataParent.souls,
+      complete: getPathDataParent.complete || !isNull(getPathDataParent.value),
+      value: null,
+    );
   }
 
   final value = getPathDataParent.value[lastKey];
 
   if (isNull(value)) {
     return PathData(
-        souls: getPathDataParent.souls, complete: true, value: value);
+      souls: getPathDataParent.souls,
+      complete: true,
+      value: value,
+    );
   }
 
   String? edgeSoul;
@@ -147,9 +156,10 @@ PathData getPathData(List<String> keys, TTGraphData graph) {
 
   if (!isNull(edgeSoul)) {
     return PathData(
-        souls: [...getPathDataParent.souls, edgeSoul!],
-        complete: graph.containsKey(edgeSoul),
-        value: graph[edgeSoul]);
+      souls: [...getPathDataParent.souls, edgeSoul!],
+      complete: graph.containsKey(edgeSoul),
+      value: graph[edgeSoul],
+    );
   }
 
   return PathData(souls: getPathDataParent.souls, complete: true, value: value);

@@ -28,11 +28,12 @@ class TTGraphEvent {
   final TTEvent<TTGet, dynamic, dynamic> get;
   final TTEvent<String, dynamic, dynamic> off;
 
-  TTGraphEvent(
-      {required this.graphData,
-      required this.put,
-      required this.get,
-      required this.off});
+  TTGraphEvent({
+    required this.graphData,
+    required this.put,
+    required this.get,
+    required this.off,
+  });
 }
 
 class TTGraphNodeMap extends GenericCustomValueMap<String, TTGraphNode> {}
@@ -58,10 +59,10 @@ class TTGraph {
 
   late final TTGraphNodeMap _nodes;
   late final Map<GraphTransportPort, EventCb<dynamic, String?, String?>>
-      _graphDataHandlers;
+  _graphDataHandlers;
 
   TTGraph({GraphMergePort? mergePort})
-      : _mergePort = mergePort ?? const DefaultGraphMergePort() {
+    : _mergePort = mergePort ?? const DefaultGraphMergePort() {
     id = generateMessageId();
     activeConnectors = 0;
     events = TTGraphEvent(
@@ -137,8 +138,10 @@ class TTGraph {
   ///
   /// @param middleware The middleware function to add
   /// @param kind Optionaly register write middleware instead of read by passing "write"
-  TTGraph use(TTMiddleware middleware,
-      {TTMiddlewareType kind = TTMiddlewareType.read}) {
+  TTGraph use(
+    TTMiddleware middleware, {
+    TTMiddlewareType kind = TTMiddlewareType.read,
+  }) {
     if (kind == TTMiddlewareType.read) {
       _readMiddleware.add(middleware);
     } else if (kind == TTMiddlewareType.write) {
@@ -151,8 +154,10 @@ class TTGraph {
   ///
   /// @param middleware The middleware function to remove
   /// @param kind Optionaly unregister write middleware instead of read by passing "write"
-  TTGraph unuse(TTMiddleware middleware,
-      {TTMiddlewareType kind = TTMiddlewareType.read}) {
+  TTGraph unuse(
+    TTMiddleware middleware, {
+    TTMiddlewareType kind = TTMiddlewareType.read,
+  }) {
     if (kind == TTMiddlewareType.read) {
       final idx = _readMiddleware.indexOf(middleware);
       if (idx != -1) {
@@ -257,8 +262,8 @@ class TTGraph {
       var currentPath = path.isEmpty
           ? key
           : path.contains("~@")
-              ? key
-              : '$path/$key';
+          ? key
+          : '$path/$key';
 
       // Check if the value is a Map (i.e. another nested dictionary)
       if (value is Map) {
@@ -275,7 +280,7 @@ class TTGraph {
             currentData2[entry.key] = {
               "#": currentPath.contains("~@")
                   ? entry.key
-                  : "$currentPath/${entry.key}"
+                  : "$currentPath/${entry.key}",
             };
           } else {
             currentData2[entry.key] = entry.value;
@@ -302,8 +307,12 @@ class TTGraph {
   /// @param data The value to write
   /// @param cb Callback function to be invoked for write acks
   /// @returns a promise
-  Future<void> putPath(final List<String> fullPath, TTValue data,
-      [TTMsgCb? cb, UUIDFuncType? uuidFn]) async {
+  Future<void> putPath(
+    final List<String> fullPath,
+    TTValue data, [
+    TTMsgCb? cb,
+    UUIDFuncType? uuidFn,
+  ]) async {
     uuidFn ??= _internalUUIdFn;
     if (fullPath.isEmpty) {
       throw ("No path specified");
@@ -427,8 +436,11 @@ class TTGraph {
   /// Update graph data in this node from some local or external source
   ///
   /// @param data node data to include
-  FutureOr<void> _receiveGraphData(TTGraphData data,
-      [String? id, String? replyToId]) async {
+  FutureOr<void> _receiveGraphData(
+    TTGraphData data, [
+    String? id,
+    String? replyToId,
+  ]) async {
     TTGraphData? diff = data;
 
     for (final fn in _readMiddleware) {
@@ -447,15 +459,21 @@ class TTGraph {
       if (node == null) {
         continue;
       }
-      node.receive((_graph[soul] =
-          _mergePort.mergeNodes(_graph[soul], diff[soul], mut: _opt.mutable!)));
+      node.receive(
+        (_graph[soul] = _mergePort.mergeNodes(
+          _graph[soul],
+          diff[soul],
+          mut: _opt.mutable!,
+        )),
+      );
     }
 
     events.graphData.trigger(diff, id, replyToId);
   }
 
   TTGraphNode _node(String soul) {
-    return (_nodes[soul] = _nodes[soul] ??
+    return (_nodes[soul] =
+        _nodes[soul] ??
         TTGraphNode(graph: this, soul: soul, updateGraph: _receiveGraphData));
   }
 

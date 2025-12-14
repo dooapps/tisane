@@ -11,10 +11,10 @@ class TTHttpRequest {
     Map<String, String>? headers,
     Duration? connectTimeout,
     Duration? receiveTimeout,
-  })  : queryParameters = queryParameters ?? <String, dynamic>{},
-        headers = headers ?? <String, String>{},
-        connectTimeout = connectTimeout ?? const Duration(seconds: 10),
-        receiveTimeout = receiveTimeout ?? const Duration(seconds: 10);
+  }) : queryParameters = queryParameters ?? <String, dynamic>{},
+       headers = headers ?? <String, String>{},
+       connectTimeout = connectTimeout ?? const Duration(seconds: 10),
+       receiveTimeout = receiveTimeout ?? const Duration(seconds: 10);
 
   final String url;
   final TTHttpMethod method;

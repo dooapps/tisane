@@ -10,18 +10,17 @@ class TTNodeMeta {
 
   TTNodeMeta({this.key, this.forward});
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'#': key, '>': forward?.toMap()};
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    '#': key,
+    '>': forward?.toMap(),
+  };
 
   factory TTNodeMeta.fromJson(Map<String, dynamic> parsedJson) {
     TTNodeState nodeState = TTNodeState();
     if (parsedJson.containsKey('>')) {
       nodeState.merge(parsedJson['>']);
     }
-    return TTNodeMeta(
-      key: parsedJson['#'].toString(),
-      forward: nodeState,
-    );
+    return TTNodeMeta(key: parsedJson['#'].toString(), forward: nodeState);
   }
 }
 
@@ -31,8 +30,10 @@ class TTNode extends GenericCustomValueMap<String, dynamic> {
 
   TTNode({this.nodeMetaData});
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'_': nodeMetaData?.toJson(), ...toMap()};
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    '_': nodeMetaData?.toJson(),
+    ...toMap(),
+  };
 
   factory TTNode.fromJson(Map<String, dynamic> parsedJson) {
     TTNodeMeta nodeMeta = TTNodeMeta();
@@ -40,9 +41,7 @@ class TTNode extends GenericCustomValueMap<String, dynamic> {
       nodeMeta = TTNodeMeta.fromJson(parsedJson['_']);
       parsedJson.remove('_');
     }
-    TTNode node = TTNode(
-      nodeMetaData: nodeMeta,
-    );
+    TTNode node = TTNode(nodeMetaData: nodeMeta);
     node.merge(parsedJson);
     return node;
   }
@@ -54,8 +53,11 @@ class TTGraphData extends GenericCustomValueMap<String, TTNode?> {
 
   factory TTGraphData.fromJson(Map<String, dynamic> parsedJson) {
     TTGraphData graphData = TTGraphData();
-    graphData.addAll(parsedJson.map<String, TTNode?>(
-        (key, value) => MapEntry(key, TTNode.fromJson(value))));
+    graphData.addAll(
+      parsedJson.map<String, TTNode?>(
+        (key, value) => MapEntry(key, TTNode.fromJson(value)),
+      ),
+    );
     return graphData;
   }
 }
@@ -68,9 +70,7 @@ class TTMsgGet {
   Map<String, dynamic> toJson() => <String, dynamic>{'#': key};
 
   factory TTMsgGet.fromJson(Map<String, dynamic> parsedJson) {
-    return TTMsgGet(
-      key: parsedJson['#'].toString(),
-    );
+    return TTMsgGet(key: parsedJson['#'].toString());
   }
 }
 
@@ -94,26 +94,27 @@ class TTMsg {
       'err': err,
       'ok': ok,
       'get': get?.toJson(),
-      'put': put
-          ?.toMap()
-          .map<String, dynamic>((key, value) => MapEntry(key, value?.toJson())),
+      'put': put?.toMap().map<String, dynamic>(
+        (key, value) => MapEntry(key, value?.toJson()),
+      ),
     };
     data.removeWhere((key, value) => value == null);
     return data;
   }
 
   factory TTMsg.fromJson(Map<String, dynamic> parsedJson) => TTMsg(
-      key: parsedJson['#']?.toString(),
-      pos: parsedJson['@']?.toString(),
-      ack: parsedJson['ack']?.toString() == 'true',
-      ok: parsedJson['ok'],
-      err: parsedJson['err']?.toString(),
-      get: parsedJson.containsKey('get')
-          ? TTMsgGet.fromJson(parsedJson['get'])
-          : null,
-      put: parsedJson.containsKey('put')
-          ? TTGraphData.fromJson(parsedJson['put'])
-          : null);
+    key: parsedJson['#']?.toString(),
+    pos: parsedJson['@']?.toString(),
+    ack: parsedJson['ack']?.toString() == 'true',
+    ok: parsedJson['ok'],
+    err: parsedJson['err']?.toString(),
+    get: parsedJson.containsKey('get')
+        ? TTMsgGet.fromJson(parsedJson['get'])
+        : null,
+    put: parsedJson.containsKey('put')
+        ? TTGraphData.fromJson(parsedJson['put'])
+        : null,
+  );
 }
 
 typedef TTValue = dynamic;

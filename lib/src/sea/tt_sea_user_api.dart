@@ -24,9 +24,9 @@ class UserReference {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'alias': alias,
-        'pub': pub,
-      };
+    'alias': alias,
+    'pub': pub,
+  };
 }
 
 class AckErr {
@@ -42,35 +42,40 @@ class UserCredentials {
   String epriv;
   String priv;
 
-  UserCredentials.from(
-      {required this.alias,
-      required this.epub,
-      required this.pub,
-      required this.epriv,
-      required this.priv});
+  UserCredentials.from({
+    required this.alias,
+    required this.epub,
+    required this.pub,
+    required this.epriv,
+    required this.priv,
+  });
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'alias': alias,
-        'epub': epub,
-        'pub': pub,
-        'epriv': epriv,
-        'priv': priv,
-      };
+    'alias': alias,
+    'epub': epub,
+    'pub': pub,
+    'epriv': epriv,
+    'priv': priv,
+  };
 
   factory UserCredentials.fromJson(Map<String, dynamic> parsedJson) {
     return UserCredentials.from(
-        alias: parsedJson['alias'],
-        epub: parsedJson['epub'],
-        pub: parsedJson['pub'],
-        epriv: parsedJson['epriv'],
-        priv: parsedJson['priv']);
+      alias: parsedJson['alias'],
+      epub: parsedJson['epub'],
+      pub: parsedJson['pub'],
+      epriv: parsedJson['epriv'],
+      priv: parsedJson['priv'],
+    );
   }
 }
 
 typedef LoginCallback = void Function(dynamic userRef);
 
-typedef SignMiddleWareFnType = FutureOr<TTGraphData> Function(
-    TTGraphData graph, TTGraphData graphSnapshot);
+typedef SignMiddleWareFnType =
+    FutureOr<TTGraphData> Function(
+      TTGraphData graph,
+      TTGraphData graphSnapshot,
+    );
 
 const DEFAULT_CREATE_OPTS = {};
 const DEFAULT_AUTH_OPTS = {};
@@ -92,8 +97,12 @@ class TTUserApi {
   /// @param password
   /// @param cb
   /// @param opt
-  Future<UserReference> create(String alias, String password,
-      [LoginCallback? cb, opt = DEFAULT_CREATE_OPTS]) async {
+  Future<UserReference> create(
+    String alias,
+    String password, [
+    LoginCallback? cb,
+    opt = DEFAULT_CREATE_OPTS,
+  ]) async {
     try {
       final user = await createUser(_client, alias, password);
       final ref = useCredentials(UserCredentials.fromJson(user.toJson()));
@@ -117,12 +126,13 @@ class TTUserApi {
   /// @param pair
   /// @param cb
   /// @param opt
-  Future<UserReference> auth(
-      {String? alias,
-      String? password,
-      PairReturnType? pair,
-      LoginCallback? cb,
-      opt = DEFAULT_AUTH_OPTS}) async {
+  Future<UserReference> auth({
+    String? alias,
+    String? password,
+    PairReturnType? pair,
+    LoginCallback? cb,
+    opt = DEFAULT_AUTH_OPTS,
+  }) async {
     if ((alias == null || password == null) && pair == null) {
       throw ("Either Enter Pair or User alias and pass");
     }
@@ -158,14 +168,19 @@ class TTUserApi {
 
   UserReference useCredentials(UserCredentials credentials) {
     leave();
-    _signMiddleware = graphSigner(PairReturnType.from(
+    _signMiddleware = graphSigner(
+      PairReturnType.from(
         pub: credentials.pub,
         priv: credentials.priv,
         epriv: credentials.epriv,
-        epub: credentials.epub));
+        epub: credentials.epub,
+      ),
+    );
     _client.graph.use(_signMiddleware!, kind: TTMiddlewareType.write);
 
-    return (isu =
-        UserReference.from(alias: credentials.alias, pub: credentials.pub));
+    return (isu = UserReference.from(
+      alias: credentials.alias,
+      pub: credentials.pub,
+    ));
   }
 }

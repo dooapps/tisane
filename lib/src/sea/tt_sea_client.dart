@@ -9,12 +9,15 @@ import 'tt_sea_user_api.dart';
 class TTSeaClient extends TTClient {
   TTUserApi? _user;
 
-  TTSeaClient(
-      {super.linkClass, TTOptions? options, bool registerStorage = false})
-      : super(
-            options: options ??
-                (TTOptions()
-                  ..peers = ["wss://gun-manhattan.herokuapp.com/gun"])) {
+  TTSeaClient({
+    super.linkClass,
+    TTOptions? options,
+    bool registerStorage = false,
+  }) : super(
+         options:
+             options ??
+             (TTOptions()..peers = ["wss://gun-manhattan.herokuapp.com/gun"]),
+       ) {
     if (registerStorage) {
       registerStorageMiddleware();
     } else {
@@ -27,19 +30,25 @@ class TTSeaClient extends TTClient {
   }
 
   void registerSearMiddleware() {
-    graph.use((TTGraphData updates, TTGraphData existingGraph) =>
-        unpackGraph(updates, graph.getOpt().mutable!));
+    graph.use(
+      (TTGraphData updates, TTGraphData existingGraph) =>
+          unpackGraph(updates, graph.getOpt().mutable!),
+    );
   }
 
   void registerStorageMiddleware() {
     // For the Read Use Case
-    graph.use((TTGraphData updates, TTGraphData existingGraph) => getStoreData(
-        unpackGraph(updates, graph.getOpt().mutable!), graph.activeConnectors));
+    graph.use(
+      (TTGraphData updates, TTGraphData existingGraph) => getStoreData(
+        unpackGraph(updates, graph.getOpt().mutable!),
+        graph.activeConnectors,
+      ),
+    );
 
     // For the Write Use Case
     graph.use(
-        (TTGraphData updates, TTGraphData existingGraph) =>
-            setStoreData(updates),
-        kind: TTMiddlewareType.write);
+      (TTGraphData updates, TTGraphData existingGraph) => setStoreData(updates),
+      kind: TTMiddlewareType.write,
+    );
   }
 }

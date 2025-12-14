@@ -18,9 +18,10 @@ class _InMemoryStore implements GraphStorePort {
       _store[soul];
 
   @override
-  Future<String?> fetchNodeJson(String soul,
-          {GraphReadOptions? options}) async =>
-      _store[soul]?.toJson().toString();
+  Future<String?> fetchNodeJson(
+    String soul, {
+    GraphReadOptions? options,
+  }) async => _store[soul]?.toJson().toString();
 
   @override
   TTNode? fetchNodeSync(String soul, {GraphReadOptions? options}) =>
@@ -50,7 +51,9 @@ void main() {
   defineGraphReplicationPortContract(
     'DefaultGraphReplicationAdapter',
     () => DefaultGraphReplicationAdapter(
-        store: _InMemoryStore(), merge: const DefaultGraphMergePort()),
+      store: _InMemoryStore(),
+      merge: const DefaultGraphMergePort(),
+    ),
     (GraphReplicationPort port, change) async {
       // Drive changes through the adapter by calling applyInbound
       final adapter = port as DefaultGraphReplicationAdapter;
@@ -61,14 +64,16 @@ void main() {
   test('applyInbound is idempotent at store level', () async {
     final store = _InMemoryStore();
     final adapter = DefaultGraphReplicationAdapter(
-        store: store, merge: const DefaultGraphMergePort());
+      store: store,
+      merge: const DefaultGraphMergePort(),
+    );
     TTGraphData diff = TTGraphData()
       ..['a'] = TTNode.fromJson({
         '_': {
           '#': 'a',
-          '>': {'v': 1}
+          '>': {'v': 1},
         },
-        'v': 1
+        'v': 1,
       });
     await adapter.applyInbound(diff);
     await adapter.applyInbound(diff);

@@ -36,8 +36,12 @@ class RecordingLogger implements TTLogger {
   }
 
   @override
-  void error(String message,
-      {Map<String, Object?>? context, Object? error, StackTrace? stackTrace}) {
+  void error(
+    String message, {
+    Map<String, Object?>? context,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
     messages.add('ERROR:$message:${error ?? ''}');
   }
 
@@ -47,8 +51,12 @@ class RecordingLogger implements TTLogger {
   }
 
   @override
-  void warn(String message,
-      {Map<String, Object?>? context, Object? error, StackTrace? stackTrace}) {
+  void warn(
+    String message, {
+    Map<String, Object?>? context,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
     messages.add('WARN:$message:${error ?? ''}');
   }
 }
@@ -57,8 +65,10 @@ void main() {
   group('DataCollector with injected HTTP client', () {
     test('returns decoded JSON payload on success', () async {
       final httpClient = FakeHttpClient(
-        response:
-            TTHttpResponse(statusCode: 200, data: '{"data": [{"price": 42}]}'),
+        response: TTHttpResponse(
+          statusCode: 200,
+          data: '{"data": [{"price": 42}]}',
+        ),
       );
       final logger = RecordingLogger();
 
@@ -77,11 +87,15 @@ void main() {
       expect(result['success'], isTrue);
       expect(result['body'], isA<Map<String, dynamic>>());
       expect(
-          httpClient.requests.single.queryParameters['symbol'], equals('XYZ'));
+        httpClient.requests.single.queryParameters['symbol'],
+        equals('XYZ'),
+      );
       expect(
-          logger.messages.any(
-              (msg) => msg.startsWith('DEBUG:Collector response received')),
-          isTrue);
+        logger.messages.any(
+          (msg) => msg.startsWith('DEBUG:Collector response received'),
+        ),
+        isTrue,
+      );
     });
 
     test('maps TTHttpException to error payload', () async {
@@ -105,8 +119,9 @@ void main() {
       expect(result['success'], isFalse);
       expect(result['error'], equals('unauthorized'));
       expect(
-        logger.messages
-            .any((msg) => msg.startsWith('WARN:Collector HTTP error')),
+        logger.messages.any(
+          (msg) => msg.startsWith('WARN:Collector HTTP error'),
+        ),
         isTrue,
       );
     });
@@ -130,8 +145,9 @@ void main() {
       expect(result['success'], isFalse);
       expect(result['error'], equals('Bad state: boom'));
       expect(
-        logger.messages
-            .any((msg) => msg.startsWith('ERROR:Unexpected collector error')),
+        logger.messages.any(
+          (msg) => msg.startsWith('ERROR:Unexpected collector error'),
+        ),
         isTrue,
       );
     });

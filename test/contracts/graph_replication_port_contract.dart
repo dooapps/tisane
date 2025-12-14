@@ -29,7 +29,7 @@ void defineGraphReplicationPortContract(
         item1: 'soul',
         item2: TTGraphData()
           ..['soul'] = TTNode.fromJson({
-            '_': {'#': 'soul', '>': {}}
+            '_': {'#': 'soul', '>': {}},
           }),
       );
       await emit(repl, entry);
@@ -46,12 +46,15 @@ void defineGraphReplicationPortContract(
       final feed = repl.changesetFeed('cursor');
       final data = TTGraphData()
         ..['x'] = TTNode.fromJson({
-          '_': {'#': 'x', '>': {}}
+          '_': {'#': 'x', '>': {}},
         });
       final c = Tuple<String, TTGraphData>(item1: 'x', item2: data);
       // feed waits until a change arrives
-      unawaited(Future<void>.delayed(const Duration(milliseconds: 10))
-          .then((_) => emit(repl, c)));
+      unawaited(
+        Future<void>.delayed(
+          const Duration(milliseconds: 10),
+        ).then((_) => emit(repl, c)),
+      );
       final next = await feed();
       expect(next?.item1, equals('x'));
     });

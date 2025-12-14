@@ -5,7 +5,9 @@ import '../contracts/logger_port_contract.dart';
 
 void main() {
   defineLoggerPortContract(
-      'PrintLogger', () => const PrintLogger(includeTimestamp: false));
+    'PrintLogger',
+    () => const PrintLogger(includeTimestamp: false),
+  );
 
   test('createDefaultLogger returns PrintLogger', () {
     expect(createDefaultLogger(), isA<PrintLogger>());

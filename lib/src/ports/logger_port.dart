@@ -4,11 +4,19 @@ abstract class TTLogger {
 
   void info(String message, {Map<String, Object?>? context});
 
-  void warn(String message,
-      {Map<String, Object?>? context, Object? error, StackTrace? stackTrace});
+  void warn(
+    String message, {
+    Map<String, Object?>? context,
+    Object? error,
+    StackTrace? stackTrace,
+  });
 
-  void error(String message,
-      {Map<String, Object?>? context, Object? error, StackTrace? stackTrace});
+  void error(
+    String message, {
+    Map<String, Object?>? context,
+    Object? error,
+    StackTrace? stackTrace,
+  });
 }
 
 /// Minimal logger that mirrors the current behaviour (stdout prints).
@@ -36,21 +44,44 @@ class PrintLogger implements TTLogger {
   }
 
   @override
-  void warn(String message,
-      {Map<String, Object?>? context, Object? error, StackTrace? stackTrace}) {
-    _log('WARN', message,
-        context: context, error: error, stackTrace: stackTrace);
+  void warn(
+    String message, {
+    Map<String, Object?>? context,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    _log(
+      'WARN',
+      message,
+      context: context,
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   @override
-  void error(String message,
-      {Map<String, Object?>? context, Object? error, StackTrace? stackTrace}) {
-    _log('ERROR', message,
-        context: context, error: error, stackTrace: stackTrace);
+  void error(
+    String message, {
+    Map<String, Object?>? context,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    _log(
+      'ERROR',
+      message,
+      context: context,
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
-  void _log(String level, String message,
-      {Map<String, Object?>? context, Object? error, StackTrace? stackTrace}) {
+  void _log(
+    String level,
+    String message, {
+    Map<String, Object?>? context,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
     final buffer = StringBuffer()
       ..write(_prefix(level))
       ..write(' ')

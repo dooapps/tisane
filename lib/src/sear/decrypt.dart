@@ -8,11 +8,16 @@ import 'settings.dart' show parse;
 
 import 'import_aes_key.dart';
 
-final DefaultAESDecryptKey DEFAULT_OPTS =
-    DefaultAESDecryptKey.from(encode: 'base64', name: 'AES-GCM');
+final DefaultAESDecryptKey DEFAULT_OPTS = DefaultAESDecryptKey.from(
+  encode: 'base64',
+  name: 'AES-GCM',
+);
 
-Future<TTValue> decrypt(dynamic data, dynamic pair,
-    [DefaultAESDecryptKey? opt]) async {
+Future<TTValue> decrypt(
+  dynamic data,
+  dynamic pair, [
+  DefaultAESDecryptKey? opt,
+]) async {
   opt ??= DEFAULT_OPTS;
   final json = parse(data);
   final encoding = opt.encode ?? DEFAULT_OPTS.encode;
@@ -20,8 +25,11 @@ Future<TTValue> decrypt(dynamic data, dynamic pair,
   final key = pair is PairReturnType ? pair.epriv : pair;
 
   try {
-    final aeskey = await importAesKey(key, base64Decode(json['s']).buffer,
-        DefaultAESKey.from(name: opt.name));
+    final aeskey = await importAesKey(
+      key,
+      base64Decode(json['s']).buffer,
+      DefaultAESKey.from(name: opt.name),
+    );
 
     final encrypted = base64Decode(json['ct']);
 
@@ -34,10 +42,14 @@ Future<TTValue> decrypt(dynamic data, dynamic pair,
       throw ('Could not decrypt');
     }
     return decrypt(
-        data,
-        pair,
-        DefaultAESDecryptKey.from(
-            encode: opt.fallback, name: opt.name, fallback: opt.fallback));
+      data,
+      pair,
+      DefaultAESDecryptKey.from(
+        encode: opt.fallback,
+        name: opt.name,
+        fallback: opt.fallback,
+      ),
+    );
   }
 }
 

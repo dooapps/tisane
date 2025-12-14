@@ -6,8 +6,12 @@ import 'sign.dart' show sign;
 
 final DefaultCertifyOPTType DEFAULT_OPTS = DefaultCertifyOPTType.from();
 
-Future certify(dynamic certificants, dynamic policy, PairReturnType authority,
-    [DefaultCertifyOPTType? opt]) async {
+Future certify(
+  dynamic certificants,
+  dynamic policy,
+  PairReturnType authority, [
+  DefaultCertifyOPTType? opt,
+]) async {
   opt ??= DEFAULT_OPTS;
 
   certificants = getCertificants(certificants);
@@ -23,19 +27,20 @@ Future certify(dynamic certificants, dynamic policy, PairReturnType authority,
   final writePolicy = policy is CertifyPolicyType
       ? policy.write
       : (policy is String || policy is List) ||
-              (policy.runtimeType == {}.runtimeType &&
-                  (policy.containsKey("+") ||
-                      policy.containsKey("#") ||
-                      policy.containsKey(".") ||
-                      policy.containsKey("=") ||
-                      policy.containsKey("*") ||
-                      policy.containsKey(">") ||
-                      policy.containsKey("<")))
-          ? policy
-          : null;
+            (policy.runtimeType == {}.runtimeType &&
+                (policy.containsKey("+") ||
+                    policy.containsKey("#") ||
+                    policy.containsKey(".") ||
+                    policy.containsKey("=") ||
+                    policy.containsKey("*") ||
+                    policy.containsKey(">") ||
+                    policy.containsKey("<")))
+      ? policy
+      : null;
 
   final block = opt.block;
-  final readBlock = (block == {}.runtimeType && block!.containsKey('read')) &&
+  final readBlock =
+      (block == {}.runtimeType && block!.containsKey('read')) &&
           (block!['read'] is String ||
               (block!['read'].runtimeType == {}.runtimeType &&
                   block!['read'].containsKey('#')))
@@ -45,11 +50,11 @@ Future certify(dynamic certificants, dynamic policy, PairReturnType authority,
   final writeBlock = block is String
       ? block
       : (block.runtimeType == {}.runtimeType && block!.containsKey('write')) &&
-              (block!['write'] is String ||
-                  (block!['write'].runtimeType == {}.runtimeType &&
-                      block!['write'].containsKey('#')))
-          ? block!['write']
-          : null;
+            (block!['write'] is String ||
+                (block!['write'].runtimeType == {}.runtimeType &&
+                    block!['write'].containsKey('#')))
+      ? block!['write']
+      : null;
 
   if (readPolicy == null && writePolicy == null) {
     throw ("No policy found.");
@@ -69,8 +74,11 @@ Future certify(dynamic certificants, dynamic policy, PairReturnType authority,
     // inject WRITE block if possible
   });
 
-  final certificate =
-      await sign(data, authority, DefaultOptSignType.from(raw: true));
+  final certificate = await sign(
+    data,
+    authority,
+    DefaultOptSignType.from(raw: true),
+  );
 
   if (opt.raw != null && opt.raw!) {
     return certificate;
