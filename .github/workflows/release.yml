@@ -2,12 +2,12 @@ name: release
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "chore/*" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  release:
+  releaseExpected: # Renamed from 'release' to match branch protection rule key
     name: releaseExpected
     runs-on: ubuntu-latest
     steps:

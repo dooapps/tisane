@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  fix:
+  fixExpected: # Renamed from 'fix' to match branch protection rule key
     name: fixExpected
     runs-on: ubuntu-latest
     steps:
