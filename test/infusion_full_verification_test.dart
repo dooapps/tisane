@@ -1,19 +1,22 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:infusion_ffi/infusion_ffi.dart';
-// For hex decoding if needed
-
-import 'dart:io';
 
 void main() {
   group('Infusion FFI Full Functionality Verification', () {
     if (Platform.environment.containsKey('CI')) {
-      // ignore: avoid_print
-      print('Skipping Infusion FFI verification tests in CI environment');
+      developer.log(
+        'Skipping Infusion FFI verification tests in CI environment',
+        name: 'tisane.tests',
+      );
       return;
     }
+
+    // No local Infusion loading in tests; rely on pub.dev package.
     test('mnemonicGenerate returns valid 12-word mnemonic', () async {
       final mnemonic = await InfusionFFI.mnemonicGenerate(wordCount: 12);
       expect(mnemonic, isNotNull);

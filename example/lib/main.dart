@@ -56,7 +56,7 @@ class _TisaneDemoState extends State<TisaneDemo> {
       final client = TTClient();
 
       // Simple write to graph (offline)
-      client.get('app/status').put({'alive': true});
+      client.get('app/status').publish({'alive': true});
 
       if (mounted) {
         setState(() {

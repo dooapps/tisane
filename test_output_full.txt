@@ -1,0 +1,46 @@
+00:00 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:01 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:02 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:03 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:04 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:05 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:06 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:07 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:08 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:09 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:10 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:11 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:12 +0: loading /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart                                                                                          00:12 +0: Infusion FFI Full Functionality Verification mnemonicGenerate returns valid 12-word mnemonic                                                                                                 00:12 +0 -1: Infusion FFI Full Functionality Verification mnemonicGenerate returns valid 12-word mnemonic [E]                                                                                          
+  Bad state: Could not find libinfusion_ffi.dylib. Automatic download is not supported. Please build the native library and place it in the application directory or set INFUSION_LIB_PATH.
+  package:infusion_ffi/src/infusion_loader.dart 107:5        InfusionLoader.load
+  package:infusion_ffi/src/infusion_native.dart 397:38       InfusionNative.mnemonicGenerate
+  package:infusion_ffi/src/infusion_ffi_wrapper.dart 107:27  InfusionFFI.mnemonicGenerate
+  test/infusion_full_verification_test.dart 18:42            main.<fn>.<fn>
+  
+
+To run this test again: /Users/liv/fvm/versions/stable/bin/cache/dart-sdk/bin/dart test /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart -p vm --plain-name 'Infusion FFI Full Functionality Verification mnemonicGenerate returns valid 12-word mnemonic'
+00:12 +0 -1: Infusion FFI Full Functionality Verification mnemonicRestore works and returns valid key config                                                                                           00:12 +0 -2: Infusion FFI Full Functionality Verification mnemonicRestore works and returns valid key config [E]                                                                                       
+  Bad state: Could not find libinfusion_ffi.dylib. Automatic download is not supported. Please build the native library and place it in the application directory or set INFUSION_LIB_PATH.
+  package:infusion_ffi/src/infusion_loader.dart 107:5        InfusionLoader.load
+  package:infusion_ffi/src/infusion_native.dart 397:38       InfusionNative.mnemonicGenerate
+  package:infusion_ffi/src/infusion_ffi_wrapper.dart 107:27  InfusionFFI.mnemonicGenerate
+  test/infusion_full_verification_test.dart 27:42            main.<fn>.<fn>
+  
+
+To run this test again: /Users/liv/fvm/versions/stable/bin/cache/dart-sdk/bin/dart test /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart -p vm --plain-name 'Infusion FFI Full Functionality Verification mnemonicRestore works and returns valid key config'
+00:12 +0 -2: Infusion FFI Full Functionality Verification Cycle: Create -> Seal -> Open -> Dispose                                                                                                     00:12 +0 -3: Infusion FFI Full Functionality Verification Cycle: Create -> Seal -> Open -> Dispose [E]                                                                                                 
+  Bad state: Could not find libinfusion_ffi.dylib. Automatic download is not supported. Please build the native library and place it in the application directory or set INFUSION_LIB_PATH.
+  package:infusion_ffi/src/infusion_loader.dart 107:5        InfusionLoader.load
+  package:infusion_ffi/src/infusion_native.dart 397:38       InfusionNative.mnemonicGenerate
+  package:infusion_ffi/src/infusion_ffi_wrapper.dart 107:27  InfusionFFI.mnemonicGenerate
+  test/infusion_full_verification_test.dart 50:42            main.<fn>.<fn>
+  
+
+To run this test again: /Users/liv/fvm/versions/stable/bin/cache/dart-sdk/bin/dart test /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart -p vm --plain-name 'Infusion FFI Full Functionality Verification Cycle: Create -> Seal -> Open -> Dispose'
+00:12 +0 -3: Infusion FFI Full Functionality Verification blindIndex generates deterministic output                                                                                                    00:12 +0 -4: Infusion FFI Full Functionality Verification blindIndex generates deterministic output [E]                                                                                                
+  Bad state: Could not find libinfusion_ffi.dylib. Automatic download is not supported. Please build the native library and place it in the application directory or set INFUSION_LIB_PATH.
+  package:infusion_ffi/src/infusion_loader.dart 107:5        InfusionLoader.load
+  package:infusion_ffi/src/infusion_native.dart 397:38       InfusionNative.mnemonicGenerate
+  package:infusion_ffi/src/infusion_ffi_wrapper.dart 107:27  InfusionFFI.mnemonicGenerate
+  test/infusion_full_verification_test.dart 93:42            main.<fn>.<fn>
+  
+
+To run this test again: /Users/liv/fvm/versions/stable/bin/cache/dart-sdk/bin/dart test /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart -p vm --plain-name 'Infusion FFI Full Functionality Verification blindIndex generates deterministic output'
+00:12 +0 -4: Infusion FFI Full Functionality Verification deriveKey returns derived bytes                                                                                                              00:12 +0 -5: Infusion FFI Full Functionality Verification deriveKey returns derived bytes [E]                                                                                                          
+  Bad state: Could not find libinfusion_ffi.dylib. Automatic download is not supported. Please build the native library and place it in the application directory or set INFUSION_LIB_PATH.
+  package:infusion_ffi/src/infusion_loader.dart 107:5        InfusionLoader.load
+  package:infusion_ffi/src/infusion_native.dart 397:38       InfusionNative.mnemonicGenerate
+  package:infusion_ffi/src/infusion_ffi_wrapper.dart 107:27  InfusionFFI.mnemonicGenerate
+  test/infusion_full_verification_test.dart 132:42           main.<fn>.<fn>
+  
+
+To run this test again: /Users/liv/fvm/versions/stable/bin/cache/dart-sdk/bin/dart test /Volumes/Dev/Projects/FinbBerLink/packages/tisane/test/infusion_full_verification_test.dart -p vm --plain-name 'Infusion FFI Full Functionality Verification deriveKey returns derived bytes'
+00:13 +0 -5: Some tests failed.                                                                                                                                                                        

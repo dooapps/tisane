@@ -3,8 +3,6 @@
 /// More dartdocs go here.
 library;
 
-export 'src/finbo_tt_base.dart';
-export 'src/data_collector.dart';
 export 'src/_internal_blind_scaling.dart';
 
 export 'src/client/tt_client.dart';
@@ -24,9 +22,6 @@ export 'src/storage/store.dart';
 export 'src/sea/tt_sea_client.dart';
 export 'src/sea/tt_sea_user_api.dart';
 export 'src/sear/index.dart';
-export 'src/fbbl_vector_data.dart';
-export 'src/data_mapper.dart';
-export 'src/data_formater.dart';
 export 'src/types/tt.dart';
 export 'src/types/tt_graph_types.dart';
 export 'src/types/tt_graph_adapter.dart';

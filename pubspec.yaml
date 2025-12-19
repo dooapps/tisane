@@ -12,13 +12,14 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  infusion_ffi: ^1.2.7
+  infusion_ffi: ^1.3.10
   base64: ^1.0.0
   uuid: ^4.5.1
   mutex: ^3.0.0
   web_socket_channel: ^3.0.3
   webcrypto: ^0.5.3
   convert: ^3.1.1
+  path: ^1.9.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_secure_storage: ^9.2.4

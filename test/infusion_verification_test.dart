@@ -1,13 +1,16 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:infusion_ffi/infusion_ffi.dart';
-import 'dart:typed_data';
-import 'dart:io';
 
 void main() {
   group('Infusion FFI Verification', () {
     if (Platform.environment.containsKey('CI')) {
       return;
     }
+
+    // No local Infusion loading in tests; rely on pub.dev package.
     test('Can generate mnemonic', () async {
       final mnemonic = await InfusionFFI.mnemonicGenerate(wordCount: 12);
       expect(mnemonic, isNotNull);

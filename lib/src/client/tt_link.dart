@@ -65,7 +65,7 @@ class TTLink {
   /// Subscribe to updates and receive a disposer callback.
   VoidCallback subscribe(TTOnCb listener) {
     if (key == '') {
-      // TODO: "Map logic"
+      // Root link subscriptions don't support map-style iteration yet.
     }
 
     _updateEvent.on(listener);

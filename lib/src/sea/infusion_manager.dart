@@ -116,4 +116,52 @@ class InfusionManager {
     await dispose();
     await initialize();
   }
+  /// Encrypts data using the vault's key and a policy ID.
+  static Future<Uint8List> seal(
+      {required Uint8List data, int policyId = 0}) async {
+    final v = await vault;
+    return v.seal(data: data, policyId: policyId);
+  }
+
+  /// Decrypts data sealed by this vault.
+  static Future<Uint8List> open(Uint8List sealedData) async {
+    final v = await vault;
+    return v.open(sealedData);
+  }
+
+  /// Derives a key for a specific context.
+  /// This is the generic version of [getHiveKey].
+  static Future<Uint8List> deriveKey(Uint8List context) async {
+    final v = await vault;
+    return v.deriveKey(context);
+  }
+
+  /// Issues a capability (delegation) for a resource.
+  /// [delegatedPub32]: The public key of the delegate (32 bytes).
+  /// [expTs]: Expiration timestamp (seconds since epoch).
+  /// [rights]: Bitmask of rights.
+  /// [scopeCid]: Content ID of the resource scope (32 bytes).
+  static Future<Uint8List> issueCap({
+    required Uint8List delegatedPub32,
+    required int expTs,
+    required int rights,
+    required Uint8List scopeCid,
+  }) async {
+    final v = await vault;
+    return v.issueCap(
+      delegatedPub32: delegatedPub32,
+      expTs: expTs,
+      rights: rights,
+      scopeCid: scopeCid,
+    );
+  }
+
+  /// Verifies a capability.
+  ///
+  /// This uses the Infusion FFI helper that understands capability tokens,
+  /// avoiding frame deserialization errors for non-frame inputs.
+  static Future<bool> verify(Uint8List cap) async {
+    final v = await vault;
+    return v.verify(cap);
+  }
 }
