@@ -116,9 +116,12 @@ class InfusionManager {
     await dispose();
     await initialize();
   }
+
   /// Encrypts data using the vault's key and a policy ID.
-  static Future<Uint8List> seal(
-      {required Uint8List data, int policyId = 0}) async {
+  static Future<Uint8List> seal({
+    required Uint8List data,
+    int policyId = 0,
+  }) async {
     final v = await vault;
     return v.seal(data: data, policyId: policyId);
   }

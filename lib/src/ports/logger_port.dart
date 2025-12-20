@@ -107,11 +107,7 @@ class PrintLogger implements TTLogger {
         ..write(stackTrace);
     }
 
-    developer.log(
-      buffer.toString(),
-      name: 'tisane',
-      level: _levelFor(level),
-    );
+    developer.log(buffer.toString(), name: 'tisane', level: _levelFor(level));
   }
 
   int _levelFor(String level) {

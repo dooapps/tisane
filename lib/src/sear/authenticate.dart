@@ -96,11 +96,7 @@ Future<AuthenticateReturnDataType> authenticate(
 
 void _debugLog(String message) {
   assert(() {
-    developer.log(
-      message,
-      name: 'tisane.sear.authenticate',
-      level: 900,
-    );
+    developer.log(message, name: 'tisane.sear.authenticate', level: 900);
     return true;
   }());
 }
