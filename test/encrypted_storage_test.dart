@@ -1,16 +1,33 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:tisane/src/storage/encrypted_storage_adapter.dart';
+import 'package:tisane/src/storage/init.dart';
 import 'package:tisane/tisane.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
-    // Initialize Hive for testing (in memory if possible, or temp dir)
-    // Hive.initFlutter() usually sets path.
-    // In test environment, we might need a temp dir.
-    // For now, rely on default or skip if path fails.
+    // Mock Path Provider
+    const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathChannel, (MethodCall methodCall) async {
+          if (methodCall.method == 'getApplicationDocumentsDirectory') {
+            return '.';
+          }
+          return null;
+        });
+
+    // Mock Secure Storage (used by InfusionManager.initialize)
+    const secureChannel = MethodChannel(
+      'plugins.it_nomads.com/flutter_secure_storage',
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureChannel, (MethodCall methodCall) async {
+          // Return null for all to simulate empty storage / successful write
+          return null;
+        });
   });
 
   group('EncryptedStorageAdapter Integration', () {
@@ -26,11 +43,10 @@ void main() {
         // Allow failure if dylib is missing, as this is an environment issue
         // not a code logic issue.
         if (e.toString().contains('libinfusion_ffi')) {
-          // ignore: avoid_print
-          print('Skipping test due to missing native library: $e');
-          return;
+          markTestSkipped('Native library libinfusion_ffi not found');
+        } else {
+          rethrow;
         }
-        rethrow;
       }
     });
   });
@@ -53,11 +69,10 @@ void main() {
         expect(InitStorage.hiveOpenBox!.get('test_key'), 'test_val');
       } catch (e) {
         if (e.toString().contains('libinfusion_ffi')) {
-          // ignore: avoid_print
-          print('Skipping test due to missing native library: $e');
-          return;
+          markTestSkipped('Native library libinfusion_ffi not found');
+        } else {
+          rethrow;
         }
-        rethrow;
       }
     });
   });

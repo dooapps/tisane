@@ -49,8 +49,29 @@ void main() {
   });
 
   group('InfusionManager Integration', () {
+    // Check if we can load the library. If not, skip the group.
+    setUp(() async {
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+        } else {
+          rethrow;
+        }
+      }
+    });
+
     test('seal and open work correctly', () async {
-      await InfusionManager.initialize();
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
 
       final data = Uint8List.fromList(utf8.encode("Sensitive Data"));
 
@@ -65,7 +86,15 @@ void main() {
     });
 
     test('deriveKey returns correct length', () async {
-      await InfusionManager.initialize();
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
       final context = Uint8List.fromList(utf8.encode("context"));
       final key = await InfusionManager.deriveKey(context);
       expect(key.length, greaterThan(0));
@@ -73,6 +102,15 @@ void main() {
 
     test('issueCap and verify flow', () async {
       // Generate a real mnemonic and restore to ensure valid keys
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
       final mnemonic = await InfusionManager.generateMnemonic();
       await InfusionManager.restoreFromMnemonic(mnemonic);
 
@@ -113,7 +151,15 @@ void main() {
     });
 
     test('getBlindIndex returns deterministic hash', () async {
-      await InfusionManager.initialize();
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
       final idx1 = await InfusionManager.getBlindIndex("test_input");
       final idx2 = await InfusionManager.getBlindIndex("test_input");
       final idx3 = await InfusionManager.getBlindIndex("other_input");
@@ -124,14 +170,30 @@ void main() {
     });
 
     test('getHiveKey returns valid key', () async {
-      await InfusionManager.initialize();
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
       final key = await InfusionManager.getHiveKey();
       expect(key, isA<Uint8List>());
       expect(key.length, greaterThan(0));
     });
 
     test('exportCredentials returns keys', () async {
-      await InfusionManager.initialize();
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
       final creds = await InfusionManager.exportCredentials();
       expect(creds.containsKey('enc_key_hex'), true);
       expect(creds.containsKey('sign_seed_hex'), true);
@@ -139,7 +201,15 @@ void main() {
     });
 
     test('seal encrypts with different policyId', () async {
-      await InfusionManager.initialize();
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
       final data = Uint8List.fromList(utf8.encode("Policy Data"));
 
       // Seal with default policy (0)
@@ -160,6 +230,16 @@ void main() {
     });
 
     test('issueCap handles custom rights and expiration', () async {
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
+
       // Ensure keys are set up
       if ((await InfusionManager.exportCredentials())['enc_key_hex'] == null) {
         await InfusionManager.initialize();
@@ -196,7 +276,15 @@ void main() {
     });
 
     test('deriveKey produces distinct keys for distinct contexts', () async {
-      await InfusionManager.initialize();
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
       final ctx1 = Uint8List.fromList(utf8.encode("context_one"));
       final ctx2 = Uint8List.fromList(utf8.encode("context_two"));
 
@@ -209,6 +297,15 @@ void main() {
     });
 
     test('Mnemonic flow (generate and restore)', () async {
+      try {
+        await InfusionManager.initialize();
+      } catch (e) {
+        if (e.toString().contains('libinfusion_ffi')) {
+          markTestSkipped('Native library libinfusion_ffi not found');
+          return;
+        }
+        rethrow;
+      }
       final mnemonic = await InfusionManager.generateMnemonic();
       expect(mnemonic.split(' ').length, 12);
 
