@@ -1,57 +1,47 @@
-# Tisane
+# 🍵 Tisane
 
-## 🇧🇷 Português (Pt-Br)
-**Tisane** é a nova camada de integração e experimentação para o ecossistema **FinBberLink**. Projetado para substituir o *TipTool*, o Tisane atua como uma malha de dados descentralizada (Data Mesh) e *offline-first* para aplicativos Flutter.
+![Pub Version](https://img.shields.io/pub/v/tisane)
+![License](https://img.shields.io/github/license/dooapps/tisane)
+![Build Status](https://img.shields.io/github/workflow/status/dooapps/tisane/Dart)
+![Style](https://img.shields.io/badge/style-effective__dart-40c4ff.svg)
 
-**Principais Funcionalidades:**
+**Tisane** is a decentralized, offline-first integration layer designed for the next generation of Flutter applications. It serves as a robust **Data Mesh**, replacing legacy monolithic architectures with a flexible, secure, and resilient synchronization fabric.
 
-- **Ponte FFI Segura**: Comunicação direta com o protocolo Rust via `infusion_ffi`.
-- **Sincronização Descentralizada**: Utiliza CRDTs (Conflict-free Replicated Data Types) para fusão de dados sem conflitos entre pares.
-- **Armazenamento Criptografado**: Persistência local segura usando Hive, com chaves protegidas pelo cofre do sistema.
-- **Arquitetura Modular**: Design baseado em Portas e Adaptadores para máxima flexibilidade e testabilidade.
-
----
-
-## 🇺🇸 English (En-Us)
-**Tisane** is the new integration and experimentation layer for the **FinBberLink** ecosystem. Designed to replace *TipTool*, Tisane acts as a decentralized (Data Mesh) and *offline-first* data mesh for Flutter applications.
-
-**Key Features:**
-
-- **Secure FFI Bridge**: Direct communication with the Rust protocol via `infusion_ffi`.
-- **Decentralized Synchronization**: Uses CRDTs (Conflict-free Replicated Data Types) for conflict-free data merging between peers.
-- **Encrypted Storage**: Secure local persistence using Hive, with keys protected by the system vault.
-- **Modular Architecture**: Ports and Adapters based design for maximum flexibility and testability.
+Built with a **Ports and Adapters** (Hexagonal) architecture, Tisane enables seamless communication between your Dart code and the high-performance Rust core via `infusion_ffi`, ensuring military-grade encryption and conflict-free data merging.
 
 ---
 
-## 🇪🇸 Español (Es)
-**Tisane** es la nueva capa de integración y experimentación para el ecosistema **FinBberLink**. Diseñado para reemplazar a *TipTool*, Tisane actúa como una malla de datos descentralizada (Data Mesh) y *offline-first* para aplicaciones Flutter.
+### 🌍 Languages / Idiomas / Idiomas
 
-**Funcionalidades Principales:**
-
-- **Puente FFI Seguro**: Comunicación directa con el protocolo Rust a través de `infusion_ffi`.
-- **Sincronización Descentralizada**: Utiliza CRDTs (Conflict-free Replicated Data Types) para la fusión de datos sin conflictos entre pares.
-- **Almacenamiento Criptográfico**: Persistencia local segura usando Hive, con claves protegidas por la bóveda del sistema.
-- **Arquitectura Modular**: Diseño basado en Puertos y Adaptadores para máxima flexibilidad y testabilidad.
+- [🇺🇸 English (Default)](#-english)
+- [🇧🇷 Português](#-português)
+- [🇪🇸 Español](#-español)
 
 ---
 
-## 📚 Documentation
+## 🇺🇸 English
 
-Tisane provides a robust set of tools for building secure, decentralized applications. Below is an overview of the key touchpoints.
+### ✨ Key Features
 
-### Installation
+- **🛡️ Secure FFI Bridge**: Direct, high-performance binding to the Rust protocol via `infusion_ffi`.
+- **🔄 Decentralized Sync**: Real-time, peer-to-peer data synchronization using **CRDTs** (Conflict-free Replicated Data Types).
+- **🔒 Encrypted Storage**: Military-grade offline persistence powered by **Hive**, with keys protected by the system's secure vault.
+- **🔌 Modular Design**: Architecture based on Ports and Adapters, allowing for easy testing and swapping of infrastructure components.
+
+### 📦 Installation
 
 Add `tisane` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  tisane: ^1.2.5
+  tisane: ^1.0.2
 ```
 
-### Initialization
+### 🚀 Getting Started
 
-Before using any Tisane features, you must initialize the `InfusionManager`. This sets up the secure vault and prepares the FFI bridge.
+#### 1. Initialization
+
+Before accessing storage or the graph, initialize the `InfusionManager` to prepare the secure vault and FFI bridge.
 
 ```dart
 import 'package:tisane/tisane.dart';
@@ -59,66 +49,165 @@ import 'package:tisane/tisane.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize the secure vault
+  // Initialize the secure vault (generates keys if none exist)
   await InfusionManager.initialize();
   
   runApp(MyApp());
 }
 ```
 
-### Core Components
+#### 2. Managing Identity (Infusion)
 
-#### 1. Infusion Manager (Security & Vault)
-
-The `InfusionManager` is your primary interface for security operations. It handles encryption keys, mnemonic generation, and secure storage access.
-
-**Key Methods:**
-- `initialize()`: Sets up the vault.
-- `generateMnemonic()`: Creates a new 12-word BIP-39 mnemonic.
-- `exportCredentials()`: Returns encryption keys (Handle with care!).
-- `getHiveKey()`: Derives a secure key for Hive storage.
-- `getBlindIndex(String)`: Generates a blind index for searchable encryption.
+Tisane uses a localized key vault. You can generate or restore identities using BIP-39 mnemonics.
 
 ```dart
-// Generate a new wallet/identity
+// Generate a new 12-word mnemonic
 String mnemonic = await InfusionManager.generateMnemonic();
+print('Keep this safe: $mnemonic');
 
-// Restore from mnemonic
+// Restore identity from a mnemonic (Wipes current credentials!)
 await InfusionManager.restoreFromMnemonic(mnemonic);
 ```
 
-#### 2. TTClient (Data Mesh)
+#### 3. Secure Storage
 
-`TTClient` is the entry point for the decentralized graph. It manages peers, data synchronization, and graph operations.
+Store sensitive data locally with encryption keys derived directly from the hardware-backed vault.
 
 ```dart
-// Create a client (optionally connecting to peers)
-final client = TTClient(
-  options: TTOptions(
-    peers: ['ws://your-peer-node.com/gun']
-  )
+// 1. Get the derived encryption key for Hive
+final cipherKey = await InfusionManager.getHiveKey();
+
+// 2. Open an encrypted box
+final box = await Hive.openBox(
+  'secure_user_data',
+  encryptionCipher: HiveAesCipher(cipherKey),
 );
 
-// Write data to a node
-client.get('user/profile').put({
-  'name': 'Alice',
-  'role': 'Developer'
+// 3. Read/Write securely
+await box.put('auth_token', 'super_secret_token');
+```
+
+#### 4. Data Mesh & Graph Operations
+
+Interact with the decentralized graph using `TTClient`.
+
+```dart
+final client = TTClient();
+
+// Write to the decentralized graph
+// Data is automatically signed and encrypted if middleware is active
+client.get('users').get('alice').put({
+  'status': 'online',
+  'role': 'engineer',
 });
 
-// Read data (Real-time subscription)
-client.get('user/profile').on((data, key, msg) {
-  print('Updated profile: $data');
+// Subscribe to real-time updates
+client.get('users').on((data, key, msg) {
+  print('Graph Update [$key]: $data');
 });
 ```
 
-#### 3. Secure Storage (Hive Integration)
+---
 
-Tisane integrates seamlessly with Hive for offline-first persistence, using keys derived efficiently from the Infusion vault.
+## 🇧🇷 Português
+
+### ✨ Funcionalidades Principais
+
+- **🛡️ Ponte FFI Segura**: Comunicação direta e de alta performance com o protocolo Rust via `infusion_ffi`.
+- **🔄 Sincronização Descentralizada**: Sincronização de dados P2P em tempo real usando **CRDTs**.
+- **🔒 Armazenamento Criptografado**: Persistência offline segura com **Hive**, protegida pelo cofre (vault) do sistema.
+- **🔌 Design Modular**: Arquitetura baseada em Portas e Adaptadores, facilitando testes e manutenção.
+
+### 📦 Instalação
+
+Adicione `tisane` ao seu `pubspec.yaml`:
+
+```yaml
+dependencies:
+  tisane: ^1.0.2
+```
+
+### 🚀 Começando
+
+#### 1. Inicialização
 
 ```dart
-// Get the secure key for Hive
-final hiveKey = await InfusionManager.getHiveKey();
+import 'package:tisane/tisane.dart';
 
-// Open a secure box
-final box = await Hive.openBox('secure_data', encryptionCipher: HiveAesCipher(hiveKey));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializa o cofre de segurança
+  await InfusionManager.initialize();
+  
+  runApp(MyApp());
+}
+```
+
+#### 2. Identidade e Infusion
+
+```dart
+// Gerar uma nova frase mnemônica de 12 palavras
+String mnemonic = await InfusionManager.generateMnemonic();
+
+// Restaurar identidade (Cuidado: Substitui as chaves atuais!)
+await InfusionManager.restoreFromMnemonic(mnemonic);
+```
+
+#### 3. Armazenamento Seguro
+
+```dart
+// Obter chave de criptografia derivada do cofre
+final cipherKey = await InfusionManager.getHiveKey();
+
+// Abrir box criptografado
+final box = await Hive.openBox(
+  'dados_seguros',
+  encryptionCipher: HiveAesCipher(cipherKey),
+);
+```
+
+---
+
+## 🇪🇸 Español
+
+### ✨ Características Principales
+
+- **🛡️ Puente FFI Seguro**: Enlace directo y de alto rendimiento con el protocolo Rust vía `infusion_ffi`.
+- **🔄 Sincronización Descentralizada**: Sincronización P2P en tiempo real usando **CRDTs**.
+- **🔒 Almacenamiento Cifrado**: Persistencia offline segura con **Hive**, protegida por la bóveda del sistema.
+- **🔌 Diseño Modular**: Arquitectura de Puertos y Adaptadores para máxima flexibilidad.
+
+### 📦 Instalación
+
+```yaml
+dependencies:
+  tisane: ^1.0.2
+```
+
+### 🚀 Primeros Pasos
+
+#### 1. Inicialización
+
+```dart
+import 'package:tisane/tisane.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar la bóveda de seguridad
+  await InfusionManager.initialize();
+  
+  runApp(MyApp());
+}
+```
+
+#### 2. Gestión de Identidad
+
+```dart
+// Generar una nueva frase mnemotécnica
+String mnemonic = await InfusionManager.generateMnemonic();
+
+// Restaurar identidad (¡Sobrescribe las credenciales actuales!)
+await InfusionManager.restoreFromMnemonic(mnemonic);
 ```
