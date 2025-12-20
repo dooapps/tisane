@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:tisane/src/storage/encrypted_storage_adapter.dart';
-import 'package:tisane/src/storage/init.dart';
+
 import 'package:tisane/tisane.dart';
 
 void main() {
