@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:typed_data';
 
 import '../types/sear/types.dart';
@@ -57,8 +58,11 @@ dynamic parse(dynamic t) {
     return yes ? jsonDecode(t) : t;
   } catch (e) {
     assert(() {
-      // ignore: avoid_print
-      print('SEA settings parse error: $e');
+      developer.log(
+        'SEA settings parse error: $e',
+        name: 'tisane.sear',
+        level: 900,
+      );
       return true;
     }());
   }

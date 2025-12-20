@@ -1,4 +1,6 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names
+import 'dart:developer' as developer;
+
 import '../../tt.dart';
 
 const Map<String, dynamic> DEFAULT_OPTS = {};
@@ -94,8 +96,7 @@ Future<AuthenticateReturnDataType> authenticate(
 
 void _debugLog(String message) {
   assert(() {
-    // ignore: avoid_print
-    print(message);
+    developer.log(message, name: 'tisane.sear.authenticate', level: 900);
     return true;
   }());
 }

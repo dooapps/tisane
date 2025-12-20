@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import '../../types/tt.dart';
 import 'tt_event.dart';
 import 'tt_queue.dart';
@@ -71,8 +73,11 @@ class TTProcessQueue<T extends TTMsg, U, V> extends TTQueue<T> {
         await processNext();
       } catch (e) {
         assert(() {
-          // ignore: avoid_print
-          print('Process Queue error: ${e.toString()}');
+          developer.log(
+            'Process Queue error: ${e.toString()}',
+            name: 'tisane.process_queue',
+            level: 1000,
+          );
           return true;
         }());
       }

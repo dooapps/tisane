@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import '../../types/tt.dart';
 
 import '../../types/tt_graph_types.dart';
@@ -37,8 +39,11 @@ class TTGraphConnectorFromAdapter extends TTGraphWireConnector {
         })
         .catchError((err) {
           assert(() {
-            // ignore: avoid_print
-            print(err);
+            developer.log(
+              err.toString(),
+              name: 'tisane.graph_connector',
+              level: 1000,
+            );
             return true;
           }());
 
@@ -72,8 +77,11 @@ class TTGraphConnectorFromAdapter extends TTGraphWireConnector {
         )
         .catchError((err) {
           assert(() {
-            // ignore: avoid_print
-            print(err);
+            developer.log(
+              err.toString(),
+              name: 'tisane.graph_connector',
+              level: 1000,
+            );
             return true;
           }());
 

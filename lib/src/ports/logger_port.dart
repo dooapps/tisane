@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 /// Logger abstraction to keep TipTool free of direct `print` usage.
 abstract class TTLogger {
   void debug(String message, {Map<String, Object?>? context});
@@ -19,7 +21,7 @@ abstract class TTLogger {
   });
 }
 
-/// Minimal logger that mirrors the current behaviour (stdout prints).
+/// Minimal logger that mirrors the current behaviour (developer log output).
 class PrintLogger implements TTLogger {
   const PrintLogger({this.includeTimestamp = true});
 
@@ -105,8 +107,22 @@ class PrintLogger implements TTLogger {
         ..write(stackTrace);
     }
 
-    // ignore: avoid_print
-    print(buffer.toString());
+    developer.log(buffer.toString(), name: 'tisane', level: _levelFor(level));
+  }
+
+  int _levelFor(String level) {
+    switch (level) {
+      case 'DEBUG':
+        return 500;
+      case 'INFO':
+        return 800;
+      case 'WARN':
+        return 900;
+      case 'ERROR':
+        return 1000;
+      default:
+        return 0;
+    }
   }
 }
 

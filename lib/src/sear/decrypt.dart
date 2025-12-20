@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'shims.dart';
 
 import '../types/tt.dart';
@@ -55,8 +56,7 @@ Future<TTValue> decrypt(
 
 void _debugLog(String message) {
   assert(() {
-    // ignore: avoid_print
-    print(message);
+    developer.log(message, name: 'tisane.sear.decrypt', level: 900);
     return true;
   }());
 }
