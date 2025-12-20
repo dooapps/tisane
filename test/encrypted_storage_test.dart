@@ -18,8 +18,9 @@ void main() {
     test('computeBlindIndex calls InfusionManager', () async {
       try {
         await InfusionManager.initialize();
-        final idx =
-            await EncryptedStorageAdapter.computeBlindIndex('test_value');
+        final idx = await EncryptedStorageAdapter.computeBlindIndex(
+          'test_value',
+        );
         expect(idx, isNotEmpty);
         expect(idx, isA<String>());
       } catch (e) {
