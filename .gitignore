@@ -26,6 +26,8 @@
 .pub-cache/
 .pub/
 build/
+secure-vaultbox.hive
+secure-vaultbox.lock
 
 # Note: pubspec.lock is usually tracked for applications to ensure consistent dependencies.
 # If this is a pure library package intended for pub.dev, you can uncomment the next line.

@@ -1,3 +1,9 @@
+## 1.1.1
+
+- Chore: Remove UI bootstrap entrypoint from package library (`lib/main.dart`).
+- Chore: Clean local vault artifacts from the repo and ignore them going forward.
+- Chore: Drop unused `cupertino_icons` dependency.
+
 ## 1.1.0
 
 - Feature: Full Infusion integration with structured envelopes (INFJ), AAD, policies (private/shared/public), and Cap Tokens.
