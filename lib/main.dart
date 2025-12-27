@@ -1,137 +1,115 @@
 import 'package:flutter/material.dart';
-// import 'package:infusion_ffi/api.dart'; // Temporarily disabled until docs are updated
+import 'package:tisane/tisane.dart';
 
-void main() async {
-  runApp(const MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const TisaneApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class TisaneApp extends StatelessWidget {
+  const TisaneApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tisane - Infusion FFI Test',
+      title: 'Tisane',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      home: const InfusionTestScreen(),
+      home: const BootstrapScreen(),
     );
   }
 }
 
-class InfusionTestScreen extends StatefulWidget {
-  const InfusionTestScreen({super.key});
+class BootstrapScreen extends StatefulWidget {
+  const BootstrapScreen({super.key});
 
   @override
-  State<InfusionTestScreen> createState() => _InfusionTestScreenState();
+  State<BootstrapScreen> createState() => _BootstrapScreenState();
 }
 
-class _InfusionTestScreenState extends State<InfusionTestScreen> {
-  String _logs = '';
+class _BootstrapScreenState extends State<BootstrapScreen> {
+  late final Future<void> _bootstrapFuture = _bootstrap();
 
-  void _log(String message) {
-    setState(() {
-      _logs +=
-          "[\${DateTime.now().toIso8601String().split('T').last}] \$message\n";
-    });
-  }
-
-  Future<void> _testInitialize() async {
-    try {
-      _log('Testing Initialize...');
-      // Waiting for documentation update on new API signature.
-      // _log('Library loaded: $lib'); // lib is undefined
-      _log('Library loading skipped (placeholder)');
-
-      // Placeholder for new API call:
-      // await lib.initialize(...);
-      _log('⚠️ API pending update. Check docs.');
-    } catch (e) {
-      _log('Error Initialize: \$e');
-    }
-  }
-
-  Future<void> _testGenerateNumericHash() async {
-    _log('Feature pending API update.');
-    // try {
-    //   final result = await FbblApi.fbblGenerateNumericHash(input: "test_input");
-    //   _log('Hash Result: \$result');
-    // } catch (e) {
-    //   _log('Error: \$e');
-    // }
-  }
-
-  Future<void> _testEncryptDecryptId() async {
-    _log('Feature pending API update.');
-    // try {
-    //   final id = BigInt.from(12345);
-    //   final nonce = List<int>.filled(12, 0);
-    //   final encrypted = await FbblApi.fbblEncryptId(id: id, nonce: nonce);
-    //   _log('Encrypted: \$encrypted');
-    // } catch (e) {
-    //   _log('Error: \$e');
-    // }
-  }
-
-  Future<void> _testCreateAndParseFrame() async {
-    _log('Feature pending API update.');
-    // try {
-    //   final frame = await FbblApi.fbblCreateFrame(...);
-    //   _log('Frame: \$frame');
-    // } catch (e) {
-    //   _log('Error: \$e');
-    // }
+  Future<void> _bootstrap() async {
+    await InfusionManager.initialize();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Infusion FFI Tester')),
-      body: Column(
+      appBar: AppBar(title: const Text('Tisane')),
+      body: Center(
+        child: FutureBuilder<void>(
+          future: _bootstrapFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const _StatusView(
+                title: 'Starting up',
+                subtitle: 'Preparing the secure vault',
+                showSpinner: true,
+              );
+            }
+            if (snapshot.hasError) {
+              return _StatusView(
+                title: 'Startup failed',
+                subtitle: snapshot.error.toString(),
+                showSpinner: false,
+                isError: true,
+              );
+            }
+            return const _StatusView(
+              title: 'Ready',
+              subtitle: 'Infusion initialized',
+              showSpinner: false,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusView extends StatelessWidget {
+  const _StatusView({
+    required this.title,
+    required this.subtitle,
+    required this.showSpinner,
+    this.isError = false,
+  });
+
+  final String title;
+  final String subtitle;
+  final bool showSpinner;
+  final bool isError;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = isError ? theme.colorScheme.error : theme.colorScheme.primary;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            flex: 2,
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                ElevatedButton(
-                  onPressed: _testInitialize,
-                  child: const Text('1. Initialize'),
-                ),
-                ElevatedButton(
-                  onPressed: _testGenerateNumericHash,
-                  child: const Text('2. Generate Numeric Hash'),
-                ),
-                ElevatedButton(
-                  onPressed: _testEncryptDecryptId,
-                  child: const Text('3. Encrypt / Decrypt ID'),
-                ),
-                ElevatedButton(
-                  onPressed: _testCreateAndParseFrame,
-                  child: const Text('4. Create, Parse & Verify Frame'),
-                ),
-              ],
+          if (showSpinner)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: CircularProgressIndicator(color: color),
             ),
+          Text(
+            title,
+            style: theme.textTheme.headlineSmall?.copyWith(color: color),
+            textAlign: TextAlign.center,
           ),
-          const Divider(),
-          Expanded(
-            flex: 3,
-            child: Container(
-              width: double.infinity,
-              color: Colors.black87,
-              padding: const EdgeInsets.all(8),
-              child: SingleChildScrollView(
-                child: Text(
-                  _logs,
-                  style: const TextStyle(
-                    color: Colors.greenAccent,
-                    fontFamily: 'Courier',
-                  ),
-                ),
-              ),
-            ),
+          const SizedBox(height: 12),
+          Text(
+            subtitle,
+            style: theme.textTheme.bodyMedium,
+            textAlign: TextAlign.center,
           ),
         ],
       ),

@@ -39,6 +39,9 @@ android/captures/
 android/local.properties
 android/generated/
 **/android/flutter_plugins.tar
+android/key.properties
+*.jks
+*.keystore
 
 # iOS
 ios/**/*.mode1v3
