@@ -1,23 +1,32 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:infusion_ffi/infusion_ffi.dart';
 
+Future<bool> _requireFfi() async {
+  try {
+    await InfusionFFI.mnemonicGenerate(wordCount: 12);
+  } catch (e) {
+    final message = e.toString().toLowerCase();
+    if (message.contains('libinfusion_ffi') ||
+        (message.contains('infusion_ffi') && message.contains('could not find'))) {
+      markTestSkipped(
+        'Infusion native library unavailable. '
+        'Set INFUSION_LIB_PATH or bundle the platform binary to run this test.',
+      );
+      return false;
+    }
+    rethrow;
+  }
+  return true;
+}
+
 void main() {
   group('Infusion FFI Full Functionality Verification', () {
-    if (Platform.environment.containsKey('CI')) {
-      developer.log(
-        'Skipping Infusion FFI verification tests in CI environment',
-        name: 'tisane.tests',
-      );
-      return;
-    }
-
     // No local Infusion loading in tests; rely on pub.dev package.
     test('mnemonicGenerate returns valid 12-word mnemonic', () async {
+      if (!await _requireFfi()) return;
       final mnemonic = await InfusionFFI.mnemonicGenerate(wordCount: 12);
       expect(mnemonic, isNotNull);
       expect(mnemonic.isNotEmpty, true);
@@ -26,6 +35,7 @@ void main() {
     });
 
     test('mnemonicRestore works and returns valid key config', () async {
+      if (!await _requireFfi()) return;
       // 1. Generate a valid mnemonic first
       final mnemonic = await InfusionFFI.mnemonicGenerate(wordCount: 12);
 
@@ -49,6 +59,7 @@ void main() {
     });
 
     test('Cycle: Create -> Seal -> Open -> Dispose', () async {
+      if (!await _requireFfi()) return;
       // Setup keys
       final mnemonic = await InfusionFFI.mnemonicGenerate(wordCount: 12);
       final jsonConfig = await InfusionFFI.mnemonicRestore(mnemonic);
@@ -92,6 +103,7 @@ void main() {
     });
 
     test('blindIndex generates deterministic output', () async {
+      if (!await _requireFfi()) return;
       // Setup keys
       final mnemonic = await InfusionFFI.mnemonicGenerate(wordCount: 12);
       final jsonConfig = await InfusionFFI.mnemonicRestore(mnemonic);
@@ -131,6 +143,7 @@ void main() {
     });
 
     test('deriveKey returns derived bytes', () async {
+      if (!await _requireFfi()) return;
       // Setup keys
       final mnemonic = await InfusionFFI.mnemonicGenerate(wordCount: 12);
       final jsonConfig = await InfusionFFI.mnemonicRestore(mnemonic);

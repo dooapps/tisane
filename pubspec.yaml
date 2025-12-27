@@ -1,6 +1,6 @@
 name: tisane
 description: Tisane is a decentralized, offline-first Data Mesh integration layer for Flutter, enabling secure FFI communication and conflict-free data synchronization.
-version: 1.0.2
+version: 1.1.0
 homepage: https://github.com/dooapps/tisane
 repository: https://github.com/dooapps/tisane
 
@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  infusion_ffi: ^1.3.10
+  infusion_ffi: ^1.3.19
   base64: ^1.0.0
   uuid: ^4.5.1
   mutex: ^3.0.0

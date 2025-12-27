@@ -5,3 +5,4 @@ library;
 
 export 'tt.dart';
 export 'src/sea/infusion_manager.dart'; // Export InfusionManager for easy access
+export 'src/sea/infusion_types.dart';

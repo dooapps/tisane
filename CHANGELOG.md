@@ -1,3 +1,9 @@
+## 1.1.0
+
+- Feature: Full Infusion integration with structured envelopes (INFJ), AAD, policies (private/shared/public), and Cap Tokens.
+- Feature: Persist public identity (author/owner) from mnemonic and expose `exportIdentity`.
+- Docs: Expanded multilingual documentation with core concepts and usage guides.
+
 ## 1.0.2
 
 - Docs: Updated README with multilingual support (PT-BR, EN-US, ES).

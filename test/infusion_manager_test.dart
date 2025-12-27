@@ -1,9 +1,22 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:math';
+import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:infusion_ffi/infusion_ffi.dart';
 import 'package:tisane/tisane.dart';
+
+Future<Uint8List> _generateValidPub32() async {
+  final mnemonic = await InfusionManager.generateMnemonic();
+  final jsonConfig = await InfusionFFI.mnemonicRestore(mnemonic);
+  final Map<String, dynamic> config = jsonDecode(jsonConfig);
+  final pubHex = config['author_pub_hex'] as String?;
+  if (pubHex == null || pubHex.isEmpty) {
+    throw StateError('mnemonic restore missing author_pub_hex');
+  }
+  return Uint8List.fromList(hex.decode(pubHex));
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -115,10 +128,9 @@ void main() {
       await InfusionManager.restoreFromMnemonic(mnemonic);
 
       final rng = Random.secure();
-      final delegatedPub = Uint8List(32);
+      final delegatedPub = await _generateValidPub32();
       final scopeCid = Uint8List(32);
       for (var i = 0; i < 32; i++) {
-        delegatedPub[i] = rng.nextInt(256);
         scopeCid[i] = rng.nextInt(256);
       }
 
@@ -137,7 +149,10 @@ void main() {
 
       // Verify
       try {
-        final isValid = await InfusionManager.verify(res);
+        final isValid = await InfusionManager.verify(
+          capToken: res,
+          requesterPub32: delegatedPub,
+        );
         expect(isValid, isTrue);
       } catch (e) {
         developer.log(
@@ -246,10 +261,9 @@ void main() {
       }
 
       final rng = Random.secure();
-      final delegatedPub = Uint8List(32);
+      final delegatedPub = await _generateValidPub32();
       final scopeCid = Uint8List(32);
       for (var i = 0; i < 32; i++) {
-        delegatedPub[i] = rng.nextInt(256);
         scopeCid[i] = rng.nextInt(256);
       }
 
@@ -262,7 +276,13 @@ void main() {
         rights: 0, // No rights
         scopeCid: scopeCid,
       );
-      expect(await InfusionManager.verify(cap1), isTrue);
+      expect(
+        await InfusionManager.verify(
+          capToken: cap1,
+          requesterPub32: delegatedPub,
+        ),
+        isTrue,
+      );
 
       // Test Case 2: Max rights
       final cap2 = await InfusionManager.issueCap(
@@ -272,7 +292,13 @@ void main() {
             255, // All 8 bits set (assuming 8-bit rights field for now, though it's likely u64 in Rust)
         scopeCid: scopeCid,
       );
-      expect(await InfusionManager.verify(cap2), isTrue);
+      expect(
+        await InfusionManager.verify(
+          capToken: cap2,
+          requesterPub32: delegatedPub,
+        ),
+        isTrue,
+      );
     });
 
     test('deriveKey produces distinct keys for distinct contexts', () async {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -5,48 +6,133 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:infusion_ffi/infusion_ffi.dart';
+import 'infusion_types.dart';
 
 class InfusionManager {
   static const _storage = FlutterSecureStorage();
   static const _kEncKey = 'infusion_enc_key';
   static const _kSignSeed = 'infusion_sign_seed';
+  static const _kAuthorPub = 'infusion_author_pub';
+  static const _kOwnerPub = 'infusion_owner_pub';
 
   // Holds the active vault context. Null if not initialized.
   static InfusionFFI? _vault;
+  static Completer<void>? _initCompleter;
+  static InfusionConfig _config = const InfusionConfig();
+
+  static InfusionConfig get config => _config;
+
+  static void configure(InfusionConfig config) {
+    _config = config;
+  }
 
   /// Ensures Infusion is initialized with keys from SecureStorage.
   /// Generates new keys if none exist.
-  static Future<void> initialize() async {
+  /// If only one key exists, the default policy is to throw unless
+  /// [allowPartialRekey] is explicitly set to true.
+  static Future<void> initialize({
+    bool allowPartialRekey = false,
+    InfusionConfig? config,
+  }) async {
+    if (config != null) {
+      _config = config;
+    }
     // If already holding a valid vault handle, do nothing.
     if (_vault != null) return;
+    final initCompleter = _initCompleter;
+    if (initCompleter != null) return initCompleter.future;
 
-    String? encHex = await _storage.read(key: _kEncKey);
-    String? signHex = await _storage.read(key: _kSignSeed);
+    final completer = Completer<void>();
+    _initCompleter = completer;
+    try {
+      String? encHex = await _storage.read(key: _kEncKey);
+      String? signHex = await _storage.read(key: _kSignSeed);
 
-    if (encHex == null || signHex == null) {
-      final rng = Random.secure();
-      final enc = Uint8List(32);
-      final sign = Uint8List(32);
-      for (int i = 0; i < 32; i++) {
-        enc[i] = rng.nextInt(256);
-        sign[i] = rng.nextInt(256);
+      if (encHex == null && signHex == null) {
+        await _storage.delete(key: _kAuthorPub);
+        await _storage.delete(key: _kOwnerPub);
+        if (config == null) {
+          _clearIdentity();
+        }
+        final rng = Random.secure();
+        final enc = Uint8List(32);
+        final sign = Uint8List(32);
+        for (int i = 0; i < 32; i++) {
+          enc[i] = rng.nextInt(256);
+          sign[i] = rng.nextInt(256);
+        }
+
+        encHex = hex.encode(enc);
+        signHex = hex.encode(sign);
+
+        await _storage.write(key: _kEncKey, value: encHex);
+        await _storage.write(key: _kSignSeed, value: signHex);
+      } else if (encHex == null || signHex == null) {
+        if (!allowPartialRekey) {
+          throw StateError(
+            'Partial Infusion key material found; refusing to rekey automatically. '
+            'Restore from mnemonic or clear stored keys explicitly.',
+          );
+        }
+        await _storage.delete(key: _kEncKey);
+        await _storage.delete(key: _kSignSeed);
+        await _storage.delete(key: _kAuthorPub);
+        await _storage.delete(key: _kOwnerPub);
+        if (config == null) {
+          _clearIdentity();
+        }
+        final rng = Random.secure();
+        final enc = Uint8List(32);
+        final sign = Uint8List(32);
+        for (int i = 0; i < 32; i++) {
+          enc[i] = rng.nextInt(256);
+          sign[i] = rng.nextInt(256);
+        }
+        encHex = hex.encode(enc);
+        signHex = hex.encode(sign);
+        await _storage.write(key: _kEncKey, value: encHex);
+        await _storage.write(key: _kSignSeed, value: signHex);
       }
 
-      encHex = hex.encode(enc);
-      signHex = hex.encode(sign);
+      final storedAuthor = await _storage.read(key: _kAuthorPub);
+      final storedOwner = await _storage.read(key: _kOwnerPub);
+      _mergeIdentity(
+        authorHex: storedAuthor,
+        ownerHex: storedOwner,
+        requesterHex: storedOwner,
+      );
 
-      await _storage.write(key: _kEncKey, value: encHex);
-      await _storage.write(key: _kSignSeed, value: signHex);
+      // Create new vault (FFI alloc)
+      _vault = await InfusionFFI.create(
+        encKeyHex: encHex,
+        signSeedHex: signHex,
+        authorPubHex: _config.authorPubHex,
+        ownerPubHex: _config.ownerPubHex,
+        requesterPubHex: _config.requesterPubHex,
+        alg: _config.alg,
+      );
+      completer.complete();
+    } catch (e, st) {
+      final mapped = _mapMissingNativeError(e);
+      if (!completer.isCompleted) {
+        completer.completeError(mapped ?? e, st);
+      }
+      if (mapped != null) {
+        Error.throwWithStackTrace(mapped, st);
+      }
+      rethrow;
+    } finally {
+      if (identical(_initCompleter, completer)) {
+        _initCompleter = null;
+      }
     }
-
-    // Create new vault (FFI alloc)
-    _vault = await InfusionFFI.create(encKeyHex: encHex, signSeedHex: signHex);
   }
 
   /// Manually disposes the current vault. Used during logout or re-keying.
   static Future<void> dispose() async {
-    if (_vault != null) {
-      await _vault!.dispose();
+    final vault = _vault;
+    if (vault != null) {
+      await vault.dispose();
       _vault = null;
     }
   }
@@ -103,6 +189,8 @@ class InfusionManager {
     // 3. Extract Keys
     final String? enc = config['enc_key_hex'];
     final String? sign = config['sign_seed_hex'];
+    final String? author = config['author_pub_hex'];
+    final String? owner = config['owner_pub_hex'];
 
     if (enc == null || sign == null) {
       throw Exception("Failed to restore keys: invalid config returned");
@@ -111,6 +199,18 @@ class InfusionManager {
     // 4. Save to Storage (Overwrite existing)
     await _storage.write(key: _kEncKey, value: enc);
     await _storage.write(key: _kSignSeed, value: sign);
+    if (author != null && author.isNotEmpty) {
+      await _storage.write(key: _kAuthorPub, value: author);
+    }
+    if (owner != null && owner.isNotEmpty) {
+      await _storage.write(key: _kOwnerPub, value: owner);
+    }
+
+    _mergeIdentity(
+      authorHex: author,
+      ownerHex: owner,
+      requesterHex: owner,
+    );
 
     // 5. Re-initialize memory (Dispose old vault, create new one)
     await dispose();
@@ -121,15 +221,19 @@ class InfusionManager {
   static Future<Uint8List> seal({
     required Uint8List data,
     int policyId = 0,
+    Uint8List? aad,
   }) async {
     final v = await vault;
-    return v.seal(data: data, policyId: policyId);
+    return v.seal(data: data, policyId: policyId, aad: aad);
   }
 
   /// Decrypts data sealed by this vault.
-  static Future<Uint8List> open(Uint8List sealedData) async {
+  static Future<Uint8List> open(
+    Uint8List sealedData, {
+    Uint8List? capToken,
+  }) async {
     final v = await vault;
-    return v.open(sealedData);
+    return v.open(sealedData, capToken: capToken);
   }
 
   /// Derives a key for a specific context.
@@ -159,12 +263,170 @@ class InfusionManager {
     );
   }
 
-  /// Verifies a capability.
+  /// Verifies a capability token for a specific requester.
   ///
   /// This uses the Infusion FFI helper that understands capability tokens,
   /// avoiding frame deserialization errors for non-frame inputs.
-  static Future<bool> verify(Uint8List cap) async {
+  static Future<bool> verify({
+    required Uint8List capToken,
+    required Uint8List requesterPub32,
+  }) async {
     final v = await vault;
-    return v.verify(cap);
+    return v.verifyCap(capToken: capToken, requesterPub32: requesterPub32);
+  }
+
+  static Future<bool> verifyCapToken({
+    required Uint8List capToken,
+    required Uint8List requesterPub32,
+  }) {
+    return verify(capToken: capToken, requesterPub32: requesterPub32);
+  }
+
+  static Future<VerifyResult> verifyFrame(Uint8List frame) async {
+    final v = await vault;
+    return v.verifyDetailed(frame);
+  }
+
+  static Future<Map<String, String?>> exportIdentity() async {
+    final storedAuthor = await _storage.read(key: _kAuthorPub);
+    final storedOwner = await _storage.read(key: _kOwnerPub);
+    final author = _config.authorPubHex ?? storedAuthor ?? storedOwner;
+    final owner = _config.ownerPubHex ?? storedOwner ?? storedAuthor;
+    final requester =
+        _config.requesterPubHex ?? storedOwner ?? storedAuthor ?? owner;
+    return {
+      'author_pub_hex': author,
+      'owner_pub_hex': owner,
+      'requester_pub_hex': requester,
+    };
+  }
+
+  static InfusionPolicy policyFor(int policyId) {
+    return _config.policyCatalog.resolve(policyId);
+  }
+
+  static int resolvePolicyId({
+    required String soul,
+    required String field,
+    Object? value,
+    Map<String, dynamic>? nodeMeta,
+  }) {
+    final resolver = _config.policyResolver;
+    if (resolver != null) {
+      return resolver(
+        InfusionPolicyContext(
+          soul: soul,
+          field: field,
+          value: value,
+          nodeMeta: nodeMeta,
+        ),
+      );
+    }
+    return _config.defaultPolicyId;
+  }
+
+  static InfusionAad buildAad({
+    required String soul,
+    required String field,
+    required int policyId,
+  }) {
+    return _config.aadBuilder(
+      InfusionAadContext(
+        soul: soul,
+        field: field,
+        policyId: policyId,
+        schemaVersion: _config.aadSchemaVersion,
+      ),
+    );
+  }
+
+  static Future<Uint8List?> resolveCapToken(
+    InfusionCapContext context,
+  ) async {
+    final provider = _config.capTokenProvider;
+    if (provider == null) return null;
+    return provider(context);
+  }
+
+  static Future<Uint8List?> resolveRequesterPub(
+    InfusionCapContext context,
+  ) async {
+    final provider = _config.requesterProvider;
+    if (provider != null) {
+      return provider(context);
+    }
+    return _hexToBytes(_config.requesterPubHex);
+  }
+
+  static Uint8List? _hexToBytes(String? value) {
+    if (value == null || value.isEmpty) return null;
+    try {
+      return Uint8List.fromList(hex.decode(value));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static StateError? _mapMissingNativeError(Object error) {
+    final message = error.toString();
+    final lowered = message.toLowerCase();
+    if (lowered.contains('libinfusion_ffi') ||
+        (lowered.contains('infusion_ffi') && lowered.contains('could not find'))) {
+      return StateError(
+        'Infusion native library unavailable. '
+        'Ensure libinfusion_ffi is bundled or set INFUSION_LIB_PATH. '
+        'Original error: $message',
+      );
+    }
+    return null;
+  }
+
+  static void _mergeIdentity({
+    String? authorHex,
+    String? ownerHex,
+    String? requesterHex,
+  }) {
+    if (authorHex == null && ownerHex == null && requesterHex == null) {
+      return;
+    }
+    final resolvedAuthor = _config.authorPubHex ?? authorHex ?? ownerHex;
+    final resolvedOwner = _config.ownerPubHex ?? ownerHex ?? authorHex;
+    final resolvedRequester =
+        _config.requesterPubHex ?? requesterHex ?? resolvedOwner;
+    _config = InfusionConfig(
+      alg: _config.alg,
+      authorPubHex: resolvedAuthor,
+      ownerPubHex: resolvedOwner,
+      requesterPubHex: resolvedRequester,
+      defaultPolicyId: _config.defaultPolicyId,
+      aadSchemaVersion: _config.aadSchemaVersion,
+      policyCatalog: _config.policyCatalog,
+      policyResolver: _config.policyResolver,
+      aadBuilder: _config.aadBuilder,
+      capTokenProvider: _config.capTokenProvider,
+      requesterProvider: _config.requesterProvider,
+      embedCapToken: _config.embedCapToken,
+      verifyFrameBeforeOpen: _config.verifyFrameBeforeOpen,
+      enforceAadContext: _config.enforceAadContext,
+    );
+  }
+
+  static void _clearIdentity() {
+    _config = InfusionConfig(
+      alg: _config.alg,
+      authorPubHex: null,
+      ownerPubHex: null,
+      requesterPubHex: null,
+      defaultPolicyId: _config.defaultPolicyId,
+      aadSchemaVersion: _config.aadSchemaVersion,
+      policyCatalog: _config.policyCatalog,
+      policyResolver: _config.policyResolver,
+      aadBuilder: _config.aadBuilder,
+      capTokenProvider: _config.capTokenProvider,
+      requesterProvider: _config.requesterProvider,
+      embedCapToken: _config.embedCapToken,
+      verifyFrameBeforeOpen: _config.verifyFrameBeforeOpen,
+      enforceAadContext: _config.enforceAadContext,
+    );
   }
 }

@@ -2,17 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:convert/convert.dart';
 import '../../types/tt.dart';
 import '../infusion_manager.dart';
+import '../infusion_types.dart';
 
 /// Middleware that protects graph data using Infusion (IP Vault).
 ///
 /// - Writes: Seals all node values (encrypts + signs).
 /// - Reads: Opens sealed values (verifies signature + decrypts).
 class InfusionSecurityMiddleware {
-  static const String _kPrefix = 'INF:';
-
   /// Intercepts data writing to the graph.
   /// Encrypts/Signs every field value before it touches the graph.
   static FutureOr<TTGraphData?> onWrite(
@@ -43,15 +41,49 @@ class InfusionSecurityMiddleware {
           final jsonStr = jsonEncode(value);
           final bytes = Uint8List.fromList(utf8.encode(jsonStr));
 
-          // Seal (Encrypt + Sign)
-          // Uses policyId=0 (default) and empty metadata for now.
-          // Accessing ffi directly from InfusionManager
-          final vault = await InfusionManager.vault;
-          final sealedFrame = await vault.seal(data: bytes, policyId: 0);
+          final policyId = InfusionManager.resolvePolicyId(
+            soul: soul,
+            field: key,
+            value: value,
+            nodeMeta: node.nodeMetaData?.toJson(),
+          );
+          final aad = InfusionManager.buildAad(
+            soul: soul,
+            field: key,
+            policyId: policyId,
+          );
+          final aadBytes = aad.toBytes();
 
-          // Encode as hex or base64 to store in graph string
-          // Prefixing to identify it's an Infusion Frame
-          final storageValue = '$_kPrefix${hex.encode(sealedFrame)}';
+          // Seal (Encrypt + Sign) with AAD and policy
+          final sealedFrame = await InfusionManager.seal(
+            data: bytes,
+            policyId: policyId,
+            aad: aadBytes,
+          );
+
+          Uint8List? capToken;
+          if (InfusionManager.config.embedCapToken) {
+            capToken = await InfusionManager.resolveCapToken(
+              InfusionCapContext(
+                soul: soul,
+                field: key,
+                policyId: policyId,
+                aad: aadBytes,
+                value: value,
+              ),
+            );
+          }
+
+          final envelope = InfusionEnvelope(
+            version: 1,
+            policyId: policyId,
+            frame: sealedFrame,
+            aad: aadBytes,
+            capToken: capToken,
+          );
+
+          // Encode as structured envelope to store in graph string
+          final storageValue = envelope.encode();
           protectedNode[key] = storageValue;
         } catch (e) {
           // If sealing fails, what do we do?
@@ -86,15 +118,77 @@ class InfusionSecurityMiddleware {
         if (key == '_') continue;
 
         final value = node[key];
-        // Check if value is a String and has our prefix
-        if (value is String && value.startsWith(_kPrefix)) {
+        if (value is String) {
+          final envelope = InfusionEnvelope.tryParse(
+            value,
+            defaultPolicyId: InfusionManager.config.defaultPolicyId,
+          );
+          if (envelope == null) {
+            revealedNode[key] = value;
+            continue;
+          }
           try {
-            final hexFrame = value.substring(_kPrefix.length);
-            final frameBytes = Uint8List.fromList(hex.decode(hexFrame));
+            final policy = InfusionManager.policyFor(envelope.policyId);
+            final aadBytes = envelope.aad;
+            if (InfusionManager.config.enforceAadContext && aadBytes != null) {
+              final aad = InfusionAad.tryParse(aadBytes);
+              if (aad == null ||
+                  aad.soul != soul ||
+                  aad.field != key ||
+                  aad.policyId != envelope.policyId) {
+                continue;
+              }
+            }
+
+            final capContext = InfusionCapContext(
+              soul: soul,
+              field: key,
+              policyId: envelope.policyId,
+              aad: aadBytes,
+              value: value,
+            );
+
+            Uint8List? capToken = envelope.capToken;
+            final providedToken = await InfusionManager.resolveCapToken(
+              capContext,
+            );
+            if (providedToken != null) {
+              capToken = providedToken;
+            }
+
+            final requesterPub = await InfusionManager.resolveRequesterPub(
+              capContext,
+            );
+
+            if (policy.requiresCapToken) {
+              if (capToken == null || requesterPub == null) {
+                continue;
+              }
+              final ok = await InfusionManager.verifyCapToken(
+                capToken: capToken,
+                requesterPub32: requesterPub,
+              );
+              if (!ok) continue;
+            } else if (capToken != null && requesterPub != null) {
+              final ok = await InfusionManager.verifyCapToken(
+                capToken: capToken,
+                requesterPub32: requesterPub,
+              );
+              if (!ok) {
+                capToken = null;
+              }
+            }
+
+            if (InfusionManager.config.verifyFrameBeforeOpen) {
+              final result = await InfusionManager.verifyFrame(envelope.frame);
+              if (!result.ok) continue;
+            }
 
             // Open (Verify Signature + Decrypt)
-            final vault = await InfusionManager.vault;
-            final clearBytes = await vault.open(frameBytes);
+            final clearBytes = await InfusionManager.open(
+              envelope.frame,
+              capToken: capToken,
+            );
 
             // Deserialize
             final jsonStr = utf8.decode(clearBytes);
