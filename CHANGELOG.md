@@ -1,3 +1,8 @@
+## 1.1.2
+
+- Debug: Add detailed Infusion init/seal/open logs to trace vault lifecycle and payload flow.
+- Chore: Bump `infusion_ffi` to 1.3.20 for the latest multi-platform binaries and Android loader fixes.
+
 ## 1.1.1
 
 - Chore: Remove UI bootstrap entrypoint from package library (`lib/main.dart`).

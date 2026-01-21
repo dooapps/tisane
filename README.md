@@ -44,7 +44,7 @@ Add `tisane` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  tisane: ^1.1.0
+  tisane: ^1.1.2
 ```
 
 ### 🚀 Getting Started
@@ -203,7 +203,7 @@ Adicione `tisane` ao seu `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  tisane: ^1.1.0
+  tisane: ^1.1.2
 ```
 
 ### 🚀 Começando
@@ -346,7 +346,7 @@ ignorados caso contrário.
 
 ```yaml
 dependencies:
-  tisane: ^1.1.0
+  tisane: ^1.1.2
 ```
 
 ### 🚀 Primeros Pasos

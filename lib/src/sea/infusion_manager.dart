@@ -37,10 +37,16 @@ class InfusionManager {
     if (config != null) {
       _config = config;
     }
+    print(
+      '🔐 Infusion: initialize() called. Vault exists: ${_vault != null}, Init in progress: ${_initCompleter != null}',
+    );
     // If already holding a valid vault handle, do nothing.
     if (_vault != null) return;
     final initCompleter = _initCompleter;
-    if (initCompleter != null) return initCompleter.future;
+    if (initCompleter != null) {
+      print('🔐 Infusion: Waiting for existing init...');
+      return initCompleter.future;
+    }
 
     final completer = Completer<void>();
     _initCompleter = completer;
@@ -48,12 +54,17 @@ class InfusionManager {
       String? encHex = await _storage.read(key: _kEncKey);
       String? signHex = await _storage.read(key: _kSignSeed);
 
+      print(
+        '🔐 Infusion: Initializing. Stored EncKey: ${encHex != null}, Stored SignSeed: ${signHex != null}',
+      );
+
       if (encHex == null && signHex == null) {
         await _storage.delete(key: _kAuthorPub);
         await _storage.delete(key: _kOwnerPub);
         if (config == null) {
           _clearIdentity();
         }
+        print('🔐 Infusion: No keys found. GENERATING NEW KEYS.');
         final rng = Random.secure();
         final enc = Uint8List(32);
         final sign = Uint8List(32);
@@ -102,6 +113,7 @@ class InfusionManager {
         requesterHex: storedOwner,
       );
 
+      print('🔐 Infusion: Creating vault (FFI)...');
       // Create new vault (FFI alloc)
       _vault = await InfusionFFI.create(
         encKeyHex: encHex,
@@ -111,6 +123,7 @@ class InfusionManager {
         requesterPubHex: _config.requesterPubHex,
         alg: _config.alg,
       );
+      print('🔐 Infusion: Vault created successfully.');
       completer.complete();
     } catch (e, st) {
       final mapped = _mapMissingNativeError(e);
@@ -206,11 +219,7 @@ class InfusionManager {
       await _storage.write(key: _kOwnerPub, value: owner);
     }
 
-    _mergeIdentity(
-      authorHex: author,
-      ownerHex: owner,
-      requesterHex: owner,
-    );
+    _mergeIdentity(authorHex: author, ownerHex: owner, requesterHex: owner);
 
     // 5. Re-initialize memory (Dispose old vault, create new one)
     await dispose();
@@ -224,7 +233,11 @@ class InfusionManager {
     Uint8List? aad,
   }) async {
     final v = await vault;
-    return v.seal(data: data, policyId: policyId, aad: aad);
+    final result = await v.seal(data: data, policyId: policyId, aad: aad);
+    print(
+      '🔐 Infusion: Seal policy $policyId. Data length: ${data.length}, Result length: ${result.length}',
+    );
+    return result;
   }
 
   /// Decrypts data sealed by this vault.
@@ -233,7 +246,18 @@ class InfusionManager {
     Uint8List? capToken,
   }) async {
     final v = await vault;
-    return v.open(sealedData, capToken: capToken);
+    try {
+      final decrypted = await v.open(sealedData, capToken: capToken);
+      print(
+        '🔐 Infusion: Open success. Sealed length: ${sealedData.length}, Decrypted length: ${decrypted.length}',
+      );
+      return decrypted;
+    } catch (e) {
+      print(
+        '🔐 Infusion: Open FAILED. Sealed length: ${sealedData.length}. Error: $e',
+      );
+      rethrow;
+    }
   }
 
   /// Derives a key for a specific context.
@@ -340,9 +364,7 @@ class InfusionManager {
     );
   }
 
-  static Future<Uint8List?> resolveCapToken(
-    InfusionCapContext context,
-  ) async {
+  static Future<Uint8List?> resolveCapToken(InfusionCapContext context) async {
     final provider = _config.capTokenProvider;
     if (provider == null) return null;
     return provider(context);
@@ -371,7 +393,8 @@ class InfusionManager {
     final message = error.toString();
     final lowered = message.toLowerCase();
     if (lowered.contains('libinfusion_ffi') ||
-        (lowered.contains('infusion_ffi') && lowered.contains('could not find'))) {
+        (lowered.contains('infusion_ffi') &&
+            lowered.contains('could not find'))) {
       return StateError(
         'Infusion native library unavailable. '
         'Ensure libinfusion_ffi is bundled or set INFUSION_LIB_PATH. '
