@@ -1,3 +1,10 @@
+## 1.2.0
+
+- Refactor: `InfusionManager` is now a Singleton `Infusion` class with dependency injection for storage, improving testability.
+- Feature: Added `InfusionStoragePort` allowing custom storage backends (e.g., memory for testing).
+- Feature: Metadata retrieval for `Infusion` identity.
+- Fix: Enhanced `TTClient.getValue` with better timeout handling and resource cleanup.
+
 ## 1.1.2
 
 - Debug: Add detailed Infusion init/seal/open logs to trace vault lifecycle and payload flow.
