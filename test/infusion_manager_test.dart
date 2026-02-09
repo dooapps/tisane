@@ -5,6 +5,8 @@ import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:infusion_ffi/infusion_ffi.dart';
+import 'package:tisane/src/adapters/infusion_storage_adapter.dart';
+import 'package:tisane/src/sea/infusion_manager.dart'; // Access internal Infusion class
 import 'package:tisane/tisane.dart';
 
 Future<Uint8List> _generateValidPub32() async {
@@ -21,40 +23,9 @@ Future<Uint8List> _generateValidPub32() async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final mockStorage = <String, String>{};
-
   setUp(() {
-    mockStorage.clear();
-
-    const channel = MethodChannel(
-      'plugins.it_nomads.com/flutter_secure_storage',
-    );
-
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-          if (methodCall.method == 'read') {
-            final Map<dynamic, dynamic> args = methodCall.arguments;
-            final key = args['key'] as String;
-            final val = mockStorage[key];
-            developer.log(
-              'MockStorage Read: $key -> $val',
-              name: 'tisane.tests',
-            );
-            return val;
-          }
-          if (methodCall.method == 'write') {
-            final Map<dynamic, dynamic> args = methodCall.arguments;
-            final key = args['key'] as String;
-            final value = args['value'] as String;
-            developer.log(
-              'MockStorage Write: $key -> $value',
-              name: 'tisane.tests',
-            );
-            mockStorage[key] = value;
-            return null;
-          }
-          return null;
-        });
+    // fast-forward clean state
+    Infusion.instance.configure(const InfusionConfig(), storage: MemoryStorageAdapter());
   });
 
   tearDown(() async {
@@ -67,7 +38,8 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        print('Initialization error: $e'); // Debug print
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
         } else {
           rethrow;
@@ -79,7 +51,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }
@@ -102,7 +74,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }
@@ -118,7 +90,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }
@@ -169,7 +141,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }
@@ -188,7 +160,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }
@@ -203,7 +175,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }
@@ -219,7 +191,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }
@@ -248,7 +220,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }
@@ -305,7 +277,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }
@@ -326,7 +298,7 @@ void main() {
       try {
         await InfusionManager.initialize();
       } catch (e) {
-        if (e.toString().contains('libinfusion_ffi')) {
+        if (e.toString().contains('libinfusion_ffi') || e.toString().contains('InfusionLoader')) {
           markTestSkipped('Native library libinfusion_ffi not found');
           return;
         }

@@ -123,23 +123,45 @@ class TTClient {
   /// @param key Key to read data from
   /// @param cb
   /// @returns New link context corresponding to given key
-  Future<dynamic> getValue(String soul, [TTMsgCb? cb]) async {
+  Future<dynamic> getValue(
+    String soul, {
+    TTMsgCb? cb,
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
     final completer = Completer<dynamic>();
-    VoidCallback dispose = () {};
+    VoidCallback? disposeQuery;
+    VoidCallback? disposeGet;
+    Timer? timer;
     var completed = false;
+
+    void finish(dynamic value, {Object? error}) {
+      if (completed) return;
+      completed = true;
+      timer?.cancel();
+      disposeQuery?.call();
+      disposeGet?.call();
+      
+      if (error != null) {
+        completer.completeError(error);
+      } else {
+        completer.complete(value);
+      }
+    }
 
     // Query the graph directly to avoid TTLink snapshot/once recursion.
     void onValue(dynamic value, [String? _, dynamic __]) {
-      if (completed) return;
-      completed = true;
-      completer.complete(value);
-      dispose();
+      finish(value);
     }
 
-    dispose = graph.query([soul], onValue);
+    disposeQuery = graph.query([soul], onValue);
+    
     // Proactively request the soul to ensure read-after-write over transports.
-    final cleanup = graph.get(soul, cb);
-    cleanup();
+    // We keep this subscription active until we get a value or timeout.
+    disposeGet = graph.get(soul, cb);
+
+    timer = Timer(timeout, () {
+      finish(null, error: TimeoutException('getValue timed out for $soul', timeout));
+    });
 
     return completer.future;
   }

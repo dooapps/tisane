@@ -4,52 +4,75 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:infusion_ffi/infusion_ffi.dart';
 import 'infusion_types.dart';
+import '../ports/infusion_storage_port.dart';
+import '../adapters/infusion_storage_adapter.dart';
 
-class InfusionManager {
-  static const _storage = FlutterSecureStorage();
+/// The core security manager for Tisane, handling Vault lifecycle and cryptographic operations.
+///
+/// This class uses a Singleton pattern accessed via `Infusion.instance`.
+/// For backward compatibility, static methods on `InfusionManager` proxy to the singleton instance.
+class Infusion {
+  static final Infusion _instance = Infusion._internal();
+  static Infusion get instance => _instance;
+
+  Infusion._internal();
+
   static const _kEncKey = 'infusion_enc_key';
   static const _kSignSeed = 'infusion_sign_seed';
   static const _kAuthorPub = 'infusion_author_pub';
   static const _kOwnerPub = 'infusion_owner_pub';
 
-  // Holds the active vault context. Null if not initialized.
-  static InfusionFFI? _vault;
-  static Completer<void>? _initCompleter;
-  static InfusionConfig _config = const InfusionConfig();
+  InfusionStoragePort _storage = const SecureStorageAdapter();
+  InfusionFFI? _vault;
+  Completer<void>? _initCompleter;
+  InfusionConfig _config = const InfusionConfig();
 
-  static InfusionConfig get config => _config;
+  InfusionConfig get config => _config;
 
-  static void configure(InfusionConfig config) {
+  /// Configures the global Infusion instance.
+  ///
+  /// You can optionally provide a custom [storage] adapter (e.g., for testing).
+  void configure(InfusionConfig config, {InfusionStoragePort? storage}) {
     _config = config;
+    if (storage != null) {
+      _storage = storage;
+    }
   }
 
-  /// Ensures Infusion is initialized with keys from SecureStorage.
+  /// ACCESSOR for the underlying storage. Used primarily for testing.
+  InfusionStoragePort get storage => _storage;
+
+  /// ACCESSOR for the underlying Vault. Initializes if needed.
+  Future<InfusionFFI> get vault async {
+    if (_vault == null) await initialize();
+    return _vault!;
+  }
+
+  /// Ensures Infusion is initialized with keys from Storage.
   /// Generates new keys if none exist.
-  /// If only one key exists, the default policy is to throw unless
-  /// [allowPartialRekey] is explicitly set to true.
-  static Future<void> initialize({
+  Future<void> initialize({
     bool allowPartialRekey = false,
     InfusionConfig? config,
+    InfusionStoragePort? storage,
   }) async {
-    if (config != null) {
-      _config = config;
-    }
+    if (config != null) _config = config;
+    if (storage != null) _storage = storage;
+
     print(
       '🔐 Infusion: initialize() called. Vault exists: ${_vault != null}, Init in progress: ${_initCompleter != null}',
     );
-    // If already holding a valid vault handle, do nothing.
+
     if (_vault != null) return;
-    final initCompleter = _initCompleter;
-    if (initCompleter != null) {
+    if (_initCompleter != null) {
       print('🔐 Infusion: Waiting for existing init...');
-      return initCompleter.future;
+      return _initCompleter!.future;
     }
 
     final completer = Completer<void>();
     _initCompleter = completer;
+
     try {
       String? encHex = await _storage.read(key: _kEncKey);
       String? signHex = await _storage.read(key: _kSignSeed);
@@ -59,25 +82,9 @@ class InfusionManager {
       );
 
       if (encHex == null && signHex == null) {
-        await _storage.delete(key: _kAuthorPub);
-        await _storage.delete(key: _kOwnerPub);
-        if (config == null) {
-          _clearIdentity();
-        }
-        print('🔐 Infusion: No keys found. GENERATING NEW KEYS.');
-        final rng = Random.secure();
-        final enc = Uint8List(32);
-        final sign = Uint8List(32);
-        for (int i = 0; i < 32; i++) {
-          enc[i] = rng.nextInt(256);
-          sign[i] = rng.nextInt(256);
-        }
-
-        encHex = hex.encode(enc);
-        signHex = hex.encode(sign);
-
-        await _storage.write(key: _kEncKey, value: encHex);
-        await _storage.write(key: _kSignSeed, value: signHex);
+        await _resetKeys();
+        encHex = await _storage.read(key: _kEncKey);
+        signHex = await _storage.read(key: _kSignSeed);
       } else if (encHex == null || signHex == null) {
         if (!allowPartialRekey) {
           throw StateError(
@@ -85,26 +92,12 @@ class InfusionManager {
             'Restore from mnemonic or clear stored keys explicitly.',
           );
         }
-        await _storage.delete(key: _kEncKey);
-        await _storage.delete(key: _kSignSeed);
-        await _storage.delete(key: _kAuthorPub);
-        await _storage.delete(key: _kOwnerPub);
-        if (config == null) {
-          _clearIdentity();
-        }
-        final rng = Random.secure();
-        final enc = Uint8List(32);
-        final sign = Uint8List(32);
-        for (int i = 0; i < 32; i++) {
-          enc[i] = rng.nextInt(256);
-          sign[i] = rng.nextInt(256);
-        }
-        encHex = hex.encode(enc);
-        signHex = hex.encode(sign);
-        await _storage.write(key: _kEncKey, value: encHex);
-        await _storage.write(key: _kSignSeed, value: signHex);
+        await _resetKeys();
+        encHex = await _storage.read(key: _kEncKey);
+        signHex = await _storage.read(key: _kSignSeed);
       }
 
+      // Load identity
       final storedAuthor = await _storage.read(key: _kAuthorPub);
       final storedOwner = await _storage.read(key: _kOwnerPub);
       _mergeIdentity(
@@ -114,10 +107,9 @@ class InfusionManager {
       );
 
       print('🔐 Infusion: Creating vault (FFI)...');
-      // Create new vault (FFI alloc)
       _vault = await InfusionFFI.create(
-        encKeyHex: encHex,
-        signSeedHex: signHex,
+        encKeyHex: encHex!,
+        signSeedHex: signHex!,
         authorPubHex: _config.authorPubHex,
         ownerPubHex: _config.ownerPubHex,
         requesterPubHex: _config.requesterPubHex,
@@ -127,12 +119,8 @@ class InfusionManager {
       completer.complete();
     } catch (e, st) {
       final mapped = _mapMissingNativeError(e);
-      if (!completer.isCompleted) {
-        completer.completeError(mapped ?? e, st);
-      }
-      if (mapped != null) {
-        Error.throwWithStackTrace(mapped, st);
-      }
+      if (!completer.isCompleted) completer.completeError(mapped ?? e, st);
+      if (mapped != null) Error.throwWithStackTrace(mapped, st);
       rethrow;
     } finally {
       if (identical(_initCompleter, completer)) {
@@ -141,8 +129,30 @@ class InfusionManager {
     }
   }
 
-  /// Manually disposes the current vault. Used during logout or re-keying.
-  static Future<void> dispose() async {
+  Future<void> _resetKeys() async {
+    await _storage.delete(key: _kAuthorPub);
+    await _storage.delete(key: _kOwnerPub);
+    await _storage.delete(key: _kEncKey);
+    await _storage.delete(key: _kSignSeed);
+
+    if (_config.authorPubHex == null) {
+      _clearIdentityCopy();
+    }
+
+    print('🔐 Infusion: GENERATING NEW KEYS.');
+    final rng = Random.secure();
+    final enc = Uint8List(32);
+    final sign = Uint8List(32);
+    for (int i = 0; i < 32; i++) {
+      enc[i] = rng.nextInt(256);
+      sign[i] = rng.nextInt(256);
+    }
+
+    await _storage.write(key: _kEncKey, value: hex.encode(enc));
+    await _storage.write(key: _kSignSeed, value: hex.encode(sign));
+  }
+
+  Future<void> dispose() async {
     final vault = _vault;
     if (vault != null) {
       await vault.dispose();
@@ -150,56 +160,33 @@ class InfusionManager {
     }
   }
 
-  /// Accessor for the underlying FFI wrapper. Initializes if needed.
-  static Future<InfusionFFI> get vault async {
-    if (_vault == null) await initialize();
-    return _vault!;
-  }
-
-  /// Derives the key for Hive storage from the Infusion master key.
-  static Future<Uint8List> getHiveKey() async {
+  Future<Uint8List> getHiveKey() async {
     final v = await vault;
-    // Context info "hive_storage" as bytes
     final context = Uint8List.fromList(utf8.encode("hive_storage"));
     return v.deriveKey(context);
   }
 
-  /// Generates a deterministic blind index for the given input.
-  /// Used for searching encrypted data without revealing the content.
-  static Future<String> getBlindIndex(String input) async {
+  Future<String> getBlindIndex(String input) async {
     final v = await vault;
     return hex.encode(await v.blindIndex(input));
   }
 
-  /// Exports the private credentials (Master Keys) of the Vault.
-  /// WARNING: These keys grant full control over the vault and data.
-  static Future<Map<String, String>> exportCredentials() async {
+  Future<Map<String, String>> exportCredentials() async {
     if (_vault == null) await initialize();
-
     final enc = await _storage.read(key: _kEncKey);
     final sign = await _storage.read(key: _kSignSeed);
-
     if (enc == null || sign == null) throw Exception("Vault not initialized");
-
     return {'enc_key_hex': enc, 'sign_seed_hex': sign};
   }
 
-  /// Generates a new 12-word BIP-39 mnemonic.
-  static Future<String> generateMnemonic() async {
+  Future<String> generateMnemonic() async {
     return await InfusionFFI.mnemonicGenerate(wordCount: 12);
   }
 
-  /// Restores the Vault keys from a BIP-39 mnemonic phrase.
-  /// Overwrites current keys in SecureStorage and re-initializes Infusion.
-  static Future<void> restoreFromMnemonic(String phrase) async {
-    // 1. Restore keys from phrase via FFI (Stateless)
-    // Returns JSON config: {"enc_key_hex": "...", "sign_seed_hex": "..."}
+  Future<void> restoreFromMnemonic(String phrase) async {
     final jsonConfigStr = await InfusionFFI.mnemonicRestore(phrase);
-
-    // 2. Parse JSON
     final Map<String, dynamic> config = jsonDecode(jsonConfigStr);
 
-    // 3. Extract Keys
     final String? enc = config['enc_key_hex'];
     final String? sign = config['sign_seed_hex'];
     final String? author = config['author_pub_hex'];
@@ -209,7 +196,6 @@ class InfusionManager {
       throw Exception("Failed to restore keys: invalid config returned");
     }
 
-    // 4. Save to Storage (Overwrite existing)
     await _storage.write(key: _kEncKey, value: enc);
     await _storage.write(key: _kSignSeed, value: sign);
     if (author != null && author.isNotEmpty) {
@@ -220,14 +206,11 @@ class InfusionManager {
     }
 
     _mergeIdentity(authorHex: author, ownerHex: owner, requesterHex: owner);
-
-    // 5. Re-initialize memory (Dispose old vault, create new one)
     await dispose();
     await initialize();
   }
 
-  /// Encrypts data using the vault's key and a policy ID.
-  static Future<Uint8List> seal({
+  Future<Uint8List> seal({
     required Uint8List data,
     int policyId = 0,
     Uint8List? aad,
@@ -235,13 +218,11 @@ class InfusionManager {
     final v = await vault;
     final result = await v.seal(data: data, policyId: policyId, aad: aad);
     print(
-      '🔐 Infusion: Seal policy $policyId. Data length: ${data.length}, Result length: ${result.length}',
-    );
+        '🔐 Infusion: Seal policy $policyId. Data length: ${data.length}, Result length: ${result.length}');
     return result;
   }
 
-  /// Decrypts data sealed by this vault.
-  static Future<Uint8List> open(
+  Future<Uint8List> open(
     Uint8List sealedData, {
     Uint8List? capToken,
   }) async {
@@ -249,30 +230,21 @@ class InfusionManager {
     try {
       final decrypted = await v.open(sealedData, capToken: capToken);
       print(
-        '🔐 Infusion: Open success. Sealed length: ${sealedData.length}, Decrypted length: ${decrypted.length}',
-      );
+          '🔐 Infusion: Open success. Sealed length: ${sealedData.length}, Decrypted length: ${decrypted.length}');
       return decrypted;
     } catch (e) {
       print(
-        '🔐 Infusion: Open FAILED. Sealed length: ${sealedData.length}. Error: $e',
-      );
+          '🔐 Infusion: Open FAILED. Sealed length: ${sealedData.length}. Error: $e');
       rethrow;
     }
   }
 
-  /// Derives a key for a specific context.
-  /// This is the generic version of [getHiveKey].
-  static Future<Uint8List> deriveKey(Uint8List context) async {
+  Future<Uint8List> deriveKey(Uint8List context) async {
     final v = await vault;
     return v.deriveKey(context);
   }
 
-  /// Issues a capability (delegation) for a resource.
-  /// [delegatedPub32]: The public key of the delegate (32 bytes).
-  /// [expTs]: Expiration timestamp (seconds since epoch).
-  /// [rights]: Bitmask of rights.
-  /// [scopeCid]: Content ID of the resource scope (32 bytes).
-  static Future<Uint8List> issueCap({
+  Future<Uint8List> issueCap({
     required Uint8List delegatedPub32,
     required int expTs,
     required int rights,
@@ -287,31 +259,20 @@ class InfusionManager {
     );
   }
 
-  /// Verifies a capability token for a specific requester.
-  ///
-  /// This uses the Infusion FFI helper that understands capability tokens,
-  /// avoiding frame deserialization errors for non-frame inputs.
-  static Future<bool> verify({
+  Future<bool> verify({
     required Uint8List capToken,
     required Uint8List requesterPub32,
   }) async {
     final v = await vault;
     return v.verifyCap(capToken: capToken, requesterPub32: requesterPub32);
   }
-
-  static Future<bool> verifyCapToken({
-    required Uint8List capToken,
-    required Uint8List requesterPub32,
-  }) {
-    return verify(capToken: capToken, requesterPub32: requesterPub32);
+    
+  Future<VerifyResult> verifyDetailed(Uint8List frame) async {
+     final v = await vault;
+     return v.verifyDetailed(frame);
   }
 
-  static Future<VerifyResult> verifyFrame(Uint8List frame) async {
-    final v = await vault;
-    return v.verifyDetailed(frame);
-  }
-
-  static Future<Map<String, String?>> exportIdentity() async {
+  Future<Map<String, String?>> exportIdentity() async {
     final storedAuthor = await _storage.read(key: _kAuthorPub);
     final storedOwner = await _storage.read(key: _kOwnerPub);
     final author = _config.authorPubHex ?? storedAuthor ?? storedOwner;
@@ -325,11 +286,11 @@ class InfusionManager {
     };
   }
 
-  static InfusionPolicy policyFor(int policyId) {
+  InfusionPolicy policyFor(int policyId) {
     return _config.policyCatalog.resolve(policyId);
   }
 
-  static int resolvePolicyId({
+  int resolvePolicyId({
     required String soul,
     required String field,
     Object? value,
@@ -349,7 +310,7 @@ class InfusionManager {
     return _config.defaultPolicyId;
   }
 
-  static InfusionAad buildAad({
+  InfusionAad buildAad({
     required String soul,
     required String field,
     required int policyId,
@@ -364,23 +325,19 @@ class InfusionManager {
     );
   }
 
-  static Future<Uint8List?> resolveCapToken(InfusionCapContext context) async {
+  Future<Uint8List?> resolveCapToken(InfusionCapContext context) async {
     final provider = _config.capTokenProvider;
     if (provider == null) return null;
     return provider(context);
   }
 
-  static Future<Uint8List?> resolveRequesterPub(
-    InfusionCapContext context,
-  ) async {
+  Future<Uint8List?> resolveRequesterPub(InfusionCapContext context) async {
     final provider = _config.requesterProvider;
-    if (provider != null) {
-      return provider(context);
-    }
+    if (provider != null) return provider(context);
     return _hexToBytes(_config.requesterPubHex);
   }
 
-  static Uint8List? _hexToBytes(String? value) {
+  Uint8List? _hexToBytes(String? value) {
     if (value == null || value.isEmpty) return null;
     try {
       return Uint8List.fromList(hex.decode(value));
@@ -389,7 +346,7 @@ class InfusionManager {
     }
   }
 
-  static StateError? _mapMissingNativeError(Object error) {
+  StateError? _mapMissingNativeError(Object error) {
     final message = error.toString();
     final lowered = message.toLowerCase();
     if (lowered.contains('libinfusion_ffi') ||
@@ -404,14 +361,12 @@ class InfusionManager {
     return null;
   }
 
-  static void _mergeIdentity({
+  void _mergeIdentity({
     String? authorHex,
     String? ownerHex,
     String? requesterHex,
   }) {
-    if (authorHex == null && ownerHex == null && requesterHex == null) {
-      return;
-    }
+    if (authorHex == null && ownerHex == null && requesterHex == null) return;
     final resolvedAuthor = _config.authorPubHex ?? authorHex ?? ownerHex;
     final resolvedOwner = _config.ownerPubHex ?? ownerHex ?? authorHex;
     final resolvedRequester =
@@ -434,7 +389,7 @@ class InfusionManager {
     );
   }
 
-  static void _clearIdentity() {
+  void _clearIdentityCopy() {
     _config = InfusionConfig(
       alg: _config.alg,
       authorPubHex: null,
@@ -452,4 +407,119 @@ class InfusionManager {
       enforceAadContext: _config.enforceAadContext,
     );
   }
+}
+
+/// Static Proxy Class for backward compatibility.
+class InfusionManager {
+  static InfusionConfig get config => Infusion.instance.config;
+
+  static void configure(InfusionConfig config) =>
+      Infusion.instance.configure(config);
+
+  static Future<void> initialize({
+    bool allowPartialRekey = false,
+    InfusionConfig? config,
+    InfusionStoragePort? storage,
+  }) => Infusion.instance.initialize(
+        allowPartialRekey: allowPartialRekey,
+        config: config,
+        storage: storage,
+      );
+
+  static Future<void> dispose() => Infusion.instance.dispose();
+
+  static Future<InfusionFFI> get vault => Infusion.instance.vault;
+
+  static Future<Uint8List> getHiveKey() => Infusion.instance.getHiveKey();
+
+  static Future<String> getBlindIndex(String input) =>
+      Infusion.instance.getBlindIndex(input);
+
+  static Future<Map<String, String>> exportCredentials() =>
+      Infusion.instance.exportCredentials();
+
+  static Future<String> generateMnemonic() =>
+      Infusion.instance.generateMnemonic();
+
+  static Future<void> restoreFromMnemonic(String phrase) =>
+      Infusion.instance.restoreFromMnemonic(phrase);
+
+  static Future<Uint8List> seal({
+    required Uint8List data,
+    int policyId = 0,
+    Uint8List? aad,
+  }) => Infusion.instance.seal(data: data, policyId: policyId, aad: aad);
+
+  static Future<Uint8List> open(
+    Uint8List sealedData, {
+    Uint8List? capToken,
+  }) => Infusion.instance.open(sealedData, capToken: capToken);
+
+  static Future<Uint8List> deriveKey(Uint8List context) =>
+      Infusion.instance.deriveKey(context);
+
+  static Future<Uint8List> issueCap({
+    required Uint8List delegatedPub32,
+    required int expTs,
+    required int rights,
+    required Uint8List scopeCid,
+  }) => Infusion.instance.issueCap(
+        delegatedPub32: delegatedPub32,
+        expTs: expTs,
+        rights: rights,
+        scopeCid: scopeCid,
+      );
+
+  static Future<bool> verify({
+    required Uint8List capToken,
+    required Uint8List requesterPub32,
+  }) => Infusion.instance.verify(
+        capToken: capToken,
+        requesterPub32: requesterPub32,
+      );
+
+  static Future<bool> verifyCapToken({
+    required Uint8List capToken,
+    required Uint8List requesterPub32,
+  }) => Infusion.instance.verify(
+        capToken: capToken,
+        requesterPub32: requesterPub32,
+      );
+
+  static Future<VerifyResult> verifyFrame(Uint8List frame) =>
+      Infusion.instance.verifyDetailed(frame);
+
+  static Future<Map<String, String?>> exportIdentity() =>
+      Infusion.instance.exportIdentity();
+
+  static InfusionPolicy policyFor(int policyId) =>
+      Infusion.instance.policyFor(policyId);
+
+  static int resolvePolicyId({
+    required String soul,
+    required String field,
+    Object? value,
+    Map<String, dynamic>? nodeMeta,
+  }) => Infusion.instance.resolvePolicyId(
+        soul: soul,
+        field: field,
+        value: value,
+        nodeMeta: nodeMeta,
+      );
+
+  static InfusionAad buildAad({
+    required String soul,
+    required String field,
+    required int policyId,
+  }) => Infusion.instance.buildAad(
+        soul: soul,
+        field: field,
+        policyId: policyId,
+      );
+
+  static Future<Uint8List?> resolveCapToken(InfusionCapContext context) =>
+      Infusion.instance.resolveCapToken(context);
+
+  static Future<Uint8List?> resolveRequesterPub(InfusionCapContext context) =>
+      Infusion.instance.resolveRequesterPub(context);
 }
