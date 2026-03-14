@@ -7,6 +7,7 @@ import 'package:tisane/tisane.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  final secureStorageState = <String, String>{};
 
   setUpAll(() async {
     // Mock Path Provider
@@ -25,7 +26,32 @@ void main() {
     );
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(secureChannel, (MethodCall methodCall) async {
-          // Return null for all to simulate empty storage / successful write
+          final args = Map<String, dynamic>.from(
+            (methodCall.arguments as Map?)?.cast<dynamic, dynamic>() ?? const {},
+          );
+          final key = args['key'] as String?;
+          switch (methodCall.method) {
+            case 'read':
+              return key == null ? null : secureStorageState[key];
+            case 'write':
+              final value = args['value'] as String?;
+              if (key != null && value != null) {
+                secureStorageState[key] = value;
+              }
+              return null;
+            case 'delete':
+              if (key != null) {
+                secureStorageState.remove(key);
+              }
+              return null;
+            case 'deleteAll':
+              secureStorageState.clear();
+              return null;
+            case 'containsKey':
+              return key != null && secureStorageState.containsKey(key);
+            case 'readAll':
+              return secureStorageState;
+          }
           return null;
         });
   });

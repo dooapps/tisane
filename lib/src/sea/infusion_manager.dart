@@ -97,6 +97,13 @@ class Infusion {
         signHex = await _storage.read(key: _kSignSeed);
       }
 
+      if (encHex == null || signHex == null) {
+        throw StateError(
+          'Infusion storage did not persist generated key material. '
+          'Check the configured InfusionStoragePort implementation.',
+        );
+      }
+
       // Load identity
       final storedAuthor = await _storage.read(key: _kAuthorPub);
       final storedOwner = await _storage.read(key: _kOwnerPub);
@@ -108,8 +115,8 @@ class Infusion {
 
       print('🔐 Infusion: Creating vault (FFI)...');
       _vault = await InfusionFFI.create(
-        encKeyHex: encHex!,
-        signSeedHex: signHex!,
+        encKeyHex: encHex,
+        signSeedHex: signHex,
         authorPubHex: _config.authorPubHex,
         ownerPubHex: _config.ownerPubHex,
         requesterPubHex: _config.requesterPubHex,

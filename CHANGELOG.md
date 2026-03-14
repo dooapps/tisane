@@ -1,9 +1,11 @@
-## 1.2.0
+## 1.2.0-dev.1
 
 - Refactor: `InfusionManager` is now a Singleton `Infusion` class with dependency injection for storage, improving testability.
 - Feature: Added `InfusionStoragePort` allowing custom storage backends (e.g., memory for testing).
 - Feature: Metadata retrieval for `Infusion` identity.
 - Fix: Enhanced `TTClient.getValue` with better timeout handling and resource cleanup.
+- Fix: Fail fast with a clear error when Infusion key material cannot be persisted.
+- Web: Added web runner files to `example/` and validated the Flutter web build path against `infusion_ffi 1.4.0-dev.1`.
 
 ## 1.1.2
 

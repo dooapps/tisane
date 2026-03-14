@@ -5,8 +5,8 @@ void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Infusion Manager (Vault/FFI)
-  await InfusionManager.initialize();
+  // Initialize encrypted Tisane storage and Infusion.
+  await initializeTTStore();
 
   runApp(const MyApp());
 }
@@ -36,6 +36,7 @@ class _TisaneDemoState extends State<TisaneDemo> {
   String _status = 'Initializing...';
   String _mnemonic = '';
   String _hiveKeyStart = '';
+  String _storageStatus = 'Checking...';
 
   @override
   void initState() {
@@ -57,12 +58,18 @@ class _TisaneDemoState extends State<TisaneDemo> {
 
       // Simple write to graph (offline)
       client.get('app/status').publish({'alive': true});
+      final box = InitStorage.hiveOpenBox;
+      final hasPersistedStatus = box?.containsKey('app/status') ?? false;
 
       if (mounted) {
         setState(() {
           _status = 'Tisane Initialized Successfully';
           _mnemonic = mnemonic;
           _hiveKeyStart = hiveKey.sublist(0, 5).toString();
+          _storageStatus =
+              hasPersistedStatus
+                  ? 'Encrypted Hive box open and offline data persisted'
+                  : 'Hive box open, but publish did not persist as expected';
         });
       }
     } catch (e) {
@@ -90,6 +97,8 @@ class _TisaneDemoState extends State<TisaneDemo> {
           SelectableText(_mnemonic.isNotEmpty ? _mnemonic : 'Generating...'),
           const SizedBox(height: 20),
           Text('Derived Hive Key (First 5 bytes): $_hiveKeyStart'),
+          const SizedBox(height: 20),
+          Text('Storage: $_storageStatus'),
           const SizedBox(height: 20),
           const Text('TTClient instantiated and graph node written.'),
         ],

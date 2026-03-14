@@ -1,0 +1,12 @@
+.DS_Store
+.dart_tool/
+.flutter-plugins-dependencies
+.idea/
+.metadata
+build/
+android/
+ios/
+secure-vaultbox.hive
+secure-vaultbox.lock
+test_output*.txt
+tisane.iml
