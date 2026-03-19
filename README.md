@@ -9,6 +9,24 @@
 
 Built with a **Ports and Adapters** (Hexagonal) architecture, Tisane enables seamless communication between your Dart code and the high-performance Rust core via `infusion_ffi`, ensuring military-grade encryption and conflict-free data merging.
 
+## Agnostic Boundary
+
+`tisane` is agnostic.
+It transports, protects and synchronizes data, but it does not own domain schemas for consumers such as `Mellis`.
+
+If a money-layer payload needs business validation, that validation must happen inside `Mellis`.
+`tisane` should remain a generic transport and security layer.
+
+Regra de ouro do canal agnostico de erro:
+
+- estado esperado de negocio nao entra no canal agnostico
+- falha operacional, contratual ou de integracao entra
+
+Reference docs:
+
+- [ERROR_SIGNALS.md](./ERROR_SIGNALS.md)
+- [SENSITIVE_PAYMENT_DATA.md](./SENSITIVE_PAYMENT_DATA.md)
+
 ---
 
 ### 🌍 Languages / Idiomas / Idiomas
@@ -179,6 +197,19 @@ tests run when the native library is available and skip otherwise.
 ---
 
 ## 🇧🇷 Português
+
+### Limite Agnóstico
+
+`tisane` é agnóstica.
+Ela transporta, protege e sincroniza dados, mas não define schemas de domínio para consumidoras como a `Mellis`.
+
+Se um payload financeiro precisar de validação de negócio, essa validação deve acontecer dentro da `Mellis`.
+`tisane` deve continuar sendo uma camada genérica de transporte e segurança.
+
+Regra de ouro do canal agnóstico de erro:
+
+- estado esperado de negócio não entra no canal agnóstico
+- falha operacional, contratual ou de integração entra
 
 ### ✨ Funcionalidades Principais
 

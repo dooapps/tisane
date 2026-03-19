@@ -12,6 +12,8 @@ export 'src/client/graph/tt_graph.dart';
 export 'src/client/graph/tt_graph_node.dart';
 export 'src/client/graph/tt_graph_utils.dart';
 export 'src/client/flow/tt_event.dart';
+export 'src/errors/tt_error_channel.dart';
+export 'src/errors/tt_error_signal.dart';
 export 'src/client/transports/tt_graph_connector.dart';
 export 'src/client/transports/tt_graph_connector_from_adapter.dart';
 export 'src/client/transports/tt_graph_wire_connector.dart';
